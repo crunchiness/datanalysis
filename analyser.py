@@ -2,26 +2,37 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import csv
+import datetime
 
 
-def plot_cdf(file_name, websites):
+def plot_cdf(input_file, home_ip, websites, filter_incoming=False, filter_outgoing=False, no_save=False, no_display=False, output_file=None):
     lengths = []
     max_length = 0
-    COUNT = 0
-    with open(file_name, 'rb') as csv_file:
+    matching_entries = 0
+    with open(input_file, 'rb') as csv_file:
         data_reader = csv.DictReader(csv_file, delimiter=',')
         for row in data_reader:
-            if row['website'] in websites and row['dst'] == '192.168.0.20':
-                COUNT += 1
-                if int(row['len']) > max_length:
-                    max_length = int(row['len'])
-                lengths.append(int(row['len']))
+            if row['website'] in websites:
+                if filter_incoming and row['dst'] == home_ip or \
+                   filter_outgoing and row['src'] == home_ip:
+                    matching_entries += 1
+                    if int(row['len']) > max_length:
+                        max_length = int(row['len'])
+                    lengths.append(int(row['len']))
+
     sorted_data = sorted(lengths)
     yvals = np.arange(len(sorted_data)) / float(len(sorted_data))
-    print COUNT
-    plt.plot(sorted_data, yvals)
-    plt.show()
+    print matching_entries, 'matching entries'
 
+    if not no_display:
+        plt.plot(sorted_data, yvals)
+
+    if not no_save:
+        if output_file is None:
+            date = datetime.datetime.now().isoformat().replace(':', '_')
+            websites_str = ';'.join(websites)
+            output_file = date + '__' + websites_str + '.svg'
+        plt.savefig(output_file)
 
 # timestamp,v,hl,tos,len,id,flags,off,ttl,p,sum,src,dst,opt,pad,website,source
 # 1448284130.978307,4,5,0,69,58949,0,0,46,17,64767,64.233.167.189,192.168.0.20,,,youtube.com,TIME
@@ -29,8 +40,14 @@ def plot_cdf(file_name, websites):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='ChromeGrapher', description='Produce a graph from Chrome data.')
     parser.add_argument('input', help='Input file name of CSV')
-    parser.add_argument('website', nargs='+', help='Website of interest')
+    parser.add_argument('ip', help='Home IP address')
     parser.add_argument('--version', action='version', version='%(prog)s 0.1')
-
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--incoming', action='store_true', help='Filter incoming packets')
+    group.add_argument('--outgoing', action='store_true', help='Filter outgoing packets')
+    parser.add_argument('--no_save', action='store_true', help='Don\'t save graph to file')
+    parser.add_argument('--no_display', action='store_true', help='Don\'t display graph')
+    parser.add_argument('website', nargs='+', help='Website of interest')
     args = parser.parse_args()
-    plot_cdf(args.input, args.website)
+    print 'Params', args
+    plot_cdf(args.input, args.ip, args.website, args.incoming, args.outgoing, args.no_save, args.no_display)

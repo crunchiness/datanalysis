@@ -64,3 +64,4 @@ target/
 *.csv
 *.txt
 *.dat
+*.svg
