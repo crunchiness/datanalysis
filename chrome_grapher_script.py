@@ -1,4 +1,4 @@
-from analyser import plot_cdf
+from chrome_grapher import plot_cdf
 input_file = 'dataset1/out.csv'
 home_ip = '192.168.0.20'
 website = ['youtube.com']
@@ -17,4 +17,4 @@ plot_cdf(input_file, home_ip, website, filter_outgoing=True, no_display=no_displ
 
 print 'youtube.com incoming/outgoing log combined'
 plot_cdf(input_file, home_ip, website, filter_incoming=True, no_display=no_display, no_save=True, use_log=True, plot_params='g-', clear=False)
-plot_cdf(input_file, home_ip, website, filter_outgoing=True, no_display=no_display, output_file='chrome_youtueb.com_combined_log_dataset1.svg', use_log=True, plot_params='r-')
+plot_cdf(input_file, home_ip, website, filter_outgoing=True, no_display=no_display, output_file='chrome_youtube.com_combined_log_dataset1.svg', use_log=True, plot_params='r-')

@@ -31,6 +31,7 @@ def plot_cdf(input_file, home_ip, websites, filter_incoming=False, filter_outgoi
 
     yvals = np.arange(len(sorted_data)) / float(len(sorted_data))
     print matching_entries, 'matching entries'
+    print 'max_length:', max_length
 
     if plot_params is None:
         plot_params = 'r-' if use_log else 'b-'
