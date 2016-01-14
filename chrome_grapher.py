@@ -5,10 +5,9 @@ import csv
 import datetime
 
 
-def plot_cdf(input_file, home_ip, websites, filter_incoming=False, filter_outgoing=False, no_save=False, no_display=False, output_file=None, use_log=False, clear=True, plot_params=None):
+def plot_cdf(input_file, home_ip, websites, filter_incoming=False, filter_outgoing=False, no_save=False, no_display=False, output_file=None, use_log=False, clear=True, ax=None, plot_params=None):
     lengths_dict = {}
     lengths = []
-    max_length = 0
     matching_entries = 0
 
     with open(input_file, 'rb') as csv_file:
@@ -18,8 +17,6 @@ def plot_cdf(input_file, home_ip, websites, filter_incoming=False, filter_outgoi
                 if filter_incoming and row['dst'] == home_ip or \
                    filter_outgoing and row['src'] == home_ip:
                     matching_entries += 1
-                    if int(row['len']) > max_length:
-                        max_length = int(row['len'])
                     lengths.append(int(row['len']))
                     try:
                         lengths_dict[int(row['len'])] += 1
@@ -30,18 +27,24 @@ def plot_cdf(input_file, home_ip, websites, filter_incoming=False, filter_outgoi
 
     # Remove some outliers
     sorted_data = sorted_data[3:-3]
-    remove_outliers(lengths_dict)
+    lengths_dict = remove_outliers(lengths_dict)
 
+    yvals = np.arange(len(sorted_data)) / float(len(sorted_data))
+    print matching_entries, 'matching entries'
+
+    if ax is None:
+        fig, ax = plt.subplots()
+    ax.set_yticklabels(['{:3}%'.format(x * 100) for x in ax.get_yticks()])
+    ax.set_ylabel('% Total')
+    ax.set_xlabel('Packet size in bytes')
 
     if use_log:
         plt.xscale('log')
 
-    yvals = np.arange(len(sorted_data)) / float(len(sorted_data))
-    print matching_entries, 'matching entries'
-    print 'max_length:', max_length
-
     if plot_params is None:
         plot_params = 'r-' if use_log else 'b-'
+    plt.tight_layout()
+
     plt.plot(sorted_data, yvals, plot_params)
 
     if not no_save:
@@ -56,7 +59,7 @@ def plot_cdf(input_file, home_ip, websites, filter_incoming=False, filter_outgoi
 
     if clear:
         plt.clf()
-    return lengths_dict
+    return ax, lengths_dict
 
 
 def remove_outliers(lengths_dict, low_end=3, high_end=3):
@@ -121,7 +124,6 @@ def length_bar_chart(lengths_dict, no_save=False, no_display=False, output_file=
     # add some text for labels, title and axes ticks
     ax.set_ylabel('Number of packets')
     ax.set_xlabel('Packet size in bytes')
-    ax.set_title('Scores by group and gender')
     ax.set_xticks(ind + width)
     ax.set_xticklabels(labels)
 
@@ -135,6 +137,7 @@ def length_bar_chart(lengths_dict, no_save=False, no_display=False, output_file=
 
     if not no_display:
         plt.show()
+    plt.clf()
 
 
 # timestamp,v,hl,tos,len,id,flags,off,ttl,p,sum,src,dst,opt,pad,website,source
