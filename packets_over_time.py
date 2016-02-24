@@ -125,6 +125,13 @@ def plot(which, show):
         if show:
             plt.show()
         plt.clf()
+    if which in 'el_manana_both_incoming':
+        chart = plot_thing(chrome['file'], chrome['ip'], colors=['r'], is_down=True, names=['YouTube Chrome'])
+        plot_thing(android['file'], android['ip'], colors=['b'], is_down=True, chart=chart, names=['YouTube Android'])
+        plt.savefig('el_manana_both_incoming.svg')
+        if show:
+            plt.show()
+        plt.clf()
     if which in 'el_manana_both_outgoing':
         chart = plot_thing(chrome['file'], chrome['ip'], colors=['r'], is_down=False, names=['YouTube Chrome'])
         plot_thing(android['file'], android['ip'], colors=['b'], is_down=False, chart=chart, names=['YouTube Android'])
