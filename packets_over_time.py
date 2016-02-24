@@ -77,18 +77,60 @@ def plot_thing(input_file, home_ip, plot_all=True, plot_second=False, plot_rest=
     plt.legend(tuple(plot_line_list), tuple(plot_name_list))
     return fig, ax, plot_line_list, plot_name_list
 
-# input_file = 'el_manana/out.csv'
-# input_file = 'dataset4/out2.csv'
-android = {
-    'file': 'el_manana/android_el_manana.csv',
-    'ip': '192.168.0.4'
-}
-chrome = {
-    'file': 'el_manana/out.csv',
-    'ip': '10.0.2.15'
-}
 
-chart = plot_thing(chrome['file'], chrome['ip'], colors=['r'], is_down=False, names=['YouTube Chrome'])
-plot_thing(android['file'], android['ip'], colors=['b'], is_down=False, chart=chart, names=['YouTube Android'])
+def plot(which, show):
+    if 'el_manana' in which:
+        android = {
+            'file': 'el_manana/android_el_manana.csv',
+            'ip': '192.168.0.4'
+        }
+        chrome = {
+            'file': 'el_manana/out.csv',
+            'ip': '10.0.2.15'
+        }
 
-plt.show()
+    if which in 'el_manana_android_over_time_incoming':
+        plot_thing(android['file'], android['ip'], is_down=True, colors=['r'], names=['All streams'])
+        plt.savefig('el_manana_android_over_time_incoming.svg')
+        if show:
+            plt.show()
+        plt.clf()
+    if which in 'el_manana_android_over_time_incoming_2':
+        plot_thing(android['file'], android['ip'], plot_second=True, is_down=True, colors=['r', 'g'], names=['All streams', 'Top stream'])
+        plt.savefig('el_manana_android_over_time_incoming_2.svg')
+        if show:
+            plt.show()
+        plt.clf()
+    if which in 'el_manana_android_over_time_incoming_3':
+        plot_thing(android['file'], android['ip'], plot_second=True, plot_rest=True, is_down=True, colors=['r', 'g', 'b'], names=['All streams', 'Top stream', 'Rest'])
+        plt.savefig('el_manana_android_over_time_incoming_3.svg')
+        if show:
+            plt.show()
+        plt.clf()
+    if which in 'el_manana_chrome_over_time_incoming':
+        plot_thing(chrome['file'], chrome['ip'], is_down=True, colors=['r'], names=['All streams'])
+        plt.savefig('el_manana_chrome_over_time_incoming.svg')
+        if show:
+            plt.show()
+        plt.clf()
+    if which in 'el_manana_chrome_over_time_incoming_2':
+        plot_thing(chrome['file'], chrome['ip'], plot_second=True, is_down=True, colors=['r', 'g'], names=['All streams', 'Top stream'])
+        plt.savefig('el_manana_chrome_over_time_incoming_2.svg')
+        if show:
+            plt.show()
+        plt.clf()
+    if which in 'el_manana_chrome_over_time_incoming_3':
+        plot_thing(chrome['file'], chrome['ip'], plot_second=True, plot_rest=True, is_down=True, colors=['r', 'g', 'b'], names=['All streams', 'Top stream', 'Rest'])
+        plt.savefig('el_manana_chrome_over_time_incoming_3.svg')
+        if show:
+            plt.show()
+        plt.clf()
+    if which in 'el_manana_both_outgoing':
+        chart = plot_thing(chrome['file'], chrome['ip'], colors=['r'], is_down=False, names=['YouTube Chrome'])
+        plot_thing(android['file'], android['ip'], colors=['b'], is_down=False, chart=chart, names=['YouTube Android'])
+        plt.savefig('el_manana_both_outgoing.svg')
+        if show:
+            plt.show()
+        plt.clf()
+
+plot('el_manana', False)
