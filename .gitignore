@@ -65,3 +65,4 @@ target/
 *.txt
 *.dat
 *.svg
+unrelated/

@@ -4,7 +4,7 @@ import csv
 website = 'youtube.com'
 # input_file = 'el_manana/android_el_manana.csv'
 # input_file = 'el_manana/out.csv'
-input_file = 'dataset4/out2.csv'
+input_file = 'dataset4/out.csv'
 home_ip = '10.0.2.15'
 # home_ip = '192.168.0.4'
 
@@ -36,6 +36,7 @@ def make_stream_id(src, src_port, dst, dst_port, protocol='TCP'):
 
 def flow_plot(input_file, home_ip, website='youtube.com', is_incoming=True):
     stream_set = set()
+    closed_set = set()
     start_timestamp = None
     connection_list = GaplessList()
 
@@ -46,9 +47,13 @@ def flow_plot(input_file, home_ip, website='youtube.com', is_incoming=True):
             start_timestamp = float(row['timestamp']) if start_timestamp is None else start_timestamp
             if website in row['website'] and row['protocol'] == 'TCP':
                 key = 'dst' if is_incoming else 'src'
-                if row[key] == home_ip and row['is_ack'] == 'False':
+                if row[key] == home_ip:
                     stream_id = make_stream_id(row['src'], row['src_port'], row['dst'], row['dst_port'])
-                    stream_set.add(stream_id)
+                    if row['is_rst'] == 'False' and row['is_fin'] == 'False' and stream_id not in closed_set:
+                        stream_set.add(stream_id)
+                    else:
+                        stream_set.discard(stream_id)
+                        closed_set.add(stream_id)
                     packet_time = int(float(row['timestamp']) - start_timestamp)
                     connection_list.set_element(packet_time, len(stream_set))
     return connection_list.get_list()
