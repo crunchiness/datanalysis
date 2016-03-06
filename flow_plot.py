@@ -1,13 +1,6 @@
 import matplotlib.pyplot as plt
 import csv
 
-website = 'youtube.com'
-# input_file = 'el_manana/android_el_manana.csv'
-# input_file = 'el_manana/out.csv'
-input_file = 'dataset4/out.csv'
-home_ip = '10.0.2.15'
-# home_ip = '192.168.0.4'
-
 
 class GaplessList:
     def __init__(self, fill='previous'):
@@ -34,7 +27,7 @@ def make_stream_id(src, src_port, dst, dst_port, protocol='TCP'):
     return '{0}:{1}-{2}:{3}-{4}'.format(src, src_port, dst, dst_port, protocol)
 
 
-def flow_plot(input_file, home_ip, website='youtube.com', is_incoming=True):
+def generate_flow_plot_data(input_file, home_ip, website='youtube.com', is_incoming=True):
     stream_set = set()
     closed_set = set()
     start_timestamp = None
@@ -46,8 +39,7 @@ def flow_plot(input_file, home_ip, website='youtube.com', is_incoming=True):
             # set start_timestamp if not set
             start_timestamp = float(row['timestamp']) if start_timestamp is None else start_timestamp
             if website in row['website'] and row['protocol'] == 'TCP':
-                key = 'dst' if is_incoming else 'src'
-                if row[key] == home_ip:
+                if row['dst' if is_incoming else 'src'] == home_ip:
                     stream_id = make_stream_id(row['src'], row['src_port'], row['dst'], row['dst_port'])
                     if row['is_rst'] == 'False' and row['is_fin'] == 'False' and stream_id not in closed_set:
                         stream_set.add(stream_id)
@@ -58,16 +50,37 @@ def flow_plot(input_file, home_ip, website='youtube.com', is_incoming=True):
                     connection_list.set_element(packet_time, len(stream_set))
     return connection_list.get_list()
 
-y = flow_plot(input_file, home_ip)
-print y
 
-fig, ax = plt.subplots()
-ax.set_ylabel('TCP stream number')
-ax.set_xlabel('time, s')
+def flow_plot(input_file, home_ip, website, is_incoming):
+    y = generate_flow_plot_data(input_file, home_ip, website, is_incoming)
+    fig, ax = plt.subplots()
+    ax.set_ylabel('# of open connections')
+    ax.set_xlabel('time, s')
+    plt.plot(y, color='red')
 
-# print len(streams_list)
-# print map(lambda x: len(x[1]), streams_list)
 
-plt.plot(y, color='red')
+def run_all(show=False):
+    website = 'youtube.com'
+    everything = {
+        # 'youtube_android_connections': {
+        #     'file': 'el_manana/android_el_manana.csv',
+        #     'ip': '192.168.0.4'
+        # },
+        'youtube_chrome_connections': {
+            'file': 'el_manana/out.csv',
+            'ip': '10.0.2.15'
+        },
+        'youtube_chrome_autoplay_connections': {
+            'file': 'dataset4/out.csv',
+            'ip': '10.0.2.15'
+        }
+    }
 
-plt.show()
+    for key in everything:
+        flow_plot(everything[key]['file'], everything[key]['ip'], website, True)
+        plt.savefig('{}.svg'.format(key))
+        if show:
+            plt.show()
+        plt.clf()
+
+run_all(True)
