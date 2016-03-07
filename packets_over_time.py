@@ -1,8 +1,8 @@
-import math
-import matplotlib.pyplot as plt
 import csv
-import numpy as np
-from matplotlib.ticker import FuncFormatter
+
+import matplotlib.pyplot as plt
+
+from shared import make_storage_ticks
 
 
 def plot_thing(input_file, home_ip, plot_all=True, plot_second=False, plot_rest=False, website='youtube.com', is_down=True, colors=None, chart=None, names=None, sizes=True):
@@ -100,27 +100,8 @@ def plot_thing(input_file, home_ip, plot_all=True, plot_second=False, plot_rest=
         i += 1
     plt.legend(plot_line_list, plot_name_list)
     if sizes:
-        units = {
-            0: 'B',
-            1: 'KB',
-            2: 'MB',
-            3: 'GB',
-            4: 'TB'
-        }
-        step_size = 1
-        i = 0
-        power = 0
-        while (1.1 * max(all_values) - step_size) / step_size >= 15:
-            step_size *= 10
-            i += 1
-            if i == 3:
-                step_size = (step_size / 1000) * 1024
-                i = 0
-                power += 1
-        if (1.1 * max(all_values) - step_size) / step_size < 5:
-            step_size /= 5
-        ax.yaxis.set_major_formatter(FuncFormatter(lambda y, pos: '{0:.0f} {1}'.format(round(y / math.pow(1024, power), 0), units[power])))
-        tix = np.arange(step_size, 1.1 * max(all_values), step_size)
+        fn, tix = make_storage_ticks(all_values)
+        ax.yaxis.set_major_formatter(fn)
         plt.yticks(tix)
     return fig, ax, plot_line_list, plot_name_list
 
@@ -188,4 +169,4 @@ def plot(which, show):
             plt.show()
         plt.clf()
 
-plot('el_manana', False)
+plot('el_manana', True)

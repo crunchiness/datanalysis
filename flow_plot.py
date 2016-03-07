@@ -1,31 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
-
-
-class GaplessList:
-    def __init__(self, fill='previous'):
-        self.list = []
-        self.fill = fill
-
-    def set_element(self, pos, element):
-        while len(self.list) <= pos:
-            if self.fill == 'previous':
-                try:
-                    previous = self.list[-1]
-                except IndexError:
-                    previous = 0
-                self.list.append(previous)
-            else:
-                self.list.append(self.fill)
-        self.list[pos] = element
-
-    def get_list(self):
-        return self.list
-
-
-def make_stream_id(src, src_port, dst, dst_port, protocol='TCP'):
-    return '{0}:{1}-{2}:{3}-{4}'.format(src, src_port, dst, dst_port, protocol)
+from shared import GaplessList, make_stream_id
 
 
 def generate_flow_plot_data(input_file, home_ip, website='youtube.com', is_incoming=True):
