@@ -30,14 +30,15 @@ def scale_data(data, total, change=1.):
     return map(lambda x: x * change * total / float(sum(data)), data)
 
 
-def top_flows_chart(chrome_input_file, android_input_file, chrome_home_ip, android_home_ip, website, is_incoming, chrome_color='red', android_color='blue', ax=None):
+def top_flows_chart(chrome_input_file, android_input_file, chrome_home_ip, android_home_ip, website, is_incoming,
+                    chrome_color='red', android_color='blue', ax=None):
     """
     Draws a plot of how much traffic transferred per flow.
     :return:
     """
     chrome_data, chrome_shortened = generate_data(chrome_input_file, chrome_home_ip, website, is_incoming)
     android_data, android_shortened = generate_data(android_input_file, android_home_ip, website, is_incoming)
-    android_data = scale_data(android_data, sum(chrome_data), 0.9)
+    # android_data = scale_data(android_data, sum(chrome_data), 0.9)
     num_values = max(len(chrome_data), len(android_data))
     shortened = chrome_shortened if len(chrome_data) > len(android_data) else android_shortened
 
@@ -68,6 +69,7 @@ def top_flows_chart(chrome_input_file, android_input_file, chrome_home_ip, andro
 
     plt.tight_layout()
 
+
 chrome_ip = '10.0.2.15'
 android_ip = '192.168.0.4'
 website = 'youtube.com'
@@ -75,4 +77,4 @@ chrome_file = 'el_manana/out.csv'
 android_file = 'el_manana/android_el_manana.csv'
 top_flows_chart(chrome_file, android_file, chrome_ip, android_ip, website, True)
 plt.savefig('top_flows_both.svg')
-plt.show()
+# plt.show()

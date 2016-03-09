@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
+import math
 from shared import GaplessList, make_stream_id
 
 
@@ -105,6 +106,76 @@ def overlay_cdf_plot(show=False):
     plt.clf()
 
 
-run_all(False)
+# def videos_10(show=False):
+#     chrome_ip = '10.0.2.15'
+#     chrome_file_name = 'videos-10/chrome-10/video-{0}/out.csv'
+#     chrome_numbers = []
+#     for i in range(1, 11):
+#         file_name = chrome_file_name.format(i)
+#         chrome_data = generate_flow_plot_data(file_name, chrome_ip, website, True)
+#         chrome_numbers.append(sum(chrome_data) / float(len(chrome_data)))
+#         cdf_plot(file_name, chrome_ip, website, True, color='red')
+#         plt.savefig('chrome_video-{0}.svg'.format(i))
+#         if show:
+#             plt.show()
+#         plt.clf()
+#     print sorted(chrome_numbers)
+#     android_ip = '192.168.0.4'
+#     android_file_name = 'videos-10/android-10/video-{0}/out.csv'
+#     android_numbers = []
+#     for i in range(1, 11):
+#         file_name = android_file_name.format(i)
+#         android_data = generate_flow_plot_data(file_name, android_ip, website, True)
+#         android_numbers.append(sum(android_data) / float(len(android_data)))
+#         cdf_plot(file_name, android_ip, website, True, color='red')
+#         plt.savefig('android_video-{0}.svg'.format(i))
+#         if show:
+#             plt.show()
+#         plt.clf()
+#     print sorted(android_numbers)
+
+
+def videos_10(show=False):
+    chrome_ip = '10.0.2.15'
+    chrome_file_name = 'videos-10/chrome-10/video-{0}/out.csv'
+    chrome_numbers = []
+    for i in range(1, 11):
+        file_name = chrome_file_name.format(i)
+        chrome_data = generate_flow_plot_data(file_name, chrome_ip, website, True)
+        chrome_numbers.append(sum(chrome_data) / float(len(chrome_data)))
+    chrome_numbers = sorted(chrome_numbers)
+
+    android_ip = '192.168.0.4'
+    android_file_name = 'videos-10/android-10/video-{0}/out.csv'
+    android_numbers = []
+    for i in range(1, 11):
+        file_name = android_file_name.format(i)
+        android_data = generate_flow_plot_data(file_name, android_ip, website, True)
+        android_numbers.append(sum(android_data) / float(len(android_data)))
+    android_numbers = sorted(android_numbers)
+
+    chrome_y_values = [len(filter(lambda x: x <= element, chrome_numbers)) for element in chrome_numbers]
+    chrome_y_values = map(lambda x: x / float(len(chrome_y_values)), chrome_y_values)
+
+    android_y_values = [len(filter(lambda x: x <= element, android_numbers)) for element in android_numbers]
+    android_y_values = map(lambda x: x / float(len(android_y_values)), android_y_values)
+
+    fig, ax = plt.subplots()
+    ax.set_ylabel('% Total')
+    ax.set_xlabel('# of connections per video (average over duration)')
+    plt.plot(chrome_numbers, chrome_y_values, color='red')
+    plt.plot(android_numbers, android_y_values, color='blue')
+    plt.ylim(0, 1)
+    ax.set_yticklabels(['{:3}%'.format(x * 100) for x in ax.get_yticks()])
+    plt.tight_layout()
+    plt.savefig('android_chrome_connections_10_videos.svg')
+
+    if show:
+        plt.show()
+    plt.clf()
+
+# run_all(False)
 # overlay_flow_plot(True)
 # overlay_cdf_plot(True)
+# videos_10()
+videos_10()
