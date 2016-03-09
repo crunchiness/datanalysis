@@ -2,7 +2,7 @@ import csv
 
 import matplotlib.pyplot as plt
 
-from shared import make_storage_ticks
+from shared import make_storage_ticks, make_stream_id
 
 
 def plot_thing(input_file, home_ip, plot_all=True, plot_second=False, plot_rest=False, website='youtube.com', is_down=True, colors=None, chart=None, names=None, sizes=True):
@@ -26,7 +26,7 @@ def plot_thing(input_file, home_ip, plot_all=True, plot_second=False, plot_rest=
                 # if row['dst'] == home_ip and row['is_ack'] == 'False':
                 # outgoing
                 if row['dst' if is_down else 'src'] == home_ip and row['is_ack'] == 'False':
-                    stream_id = '{0}:{1}|{2}:{3}'.format(row['src'], row['src_port'], row['dst'], row['dst_port'])
+                    stream_id = make_stream_id(row['src'], row['src_port'], row['dst'], row['dst_port'])
                     try:
                         streams[stream_id].append((float(row['timestamp']), int(row['len'])))
                     except KeyError:

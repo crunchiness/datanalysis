@@ -3,7 +3,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from shared import make_stream_id, make_storage_ticks
+from shared import make_stream_id, make_storage_ticks, scale_data
 
 
 def generate_data(input_file, home_ip, website='youtube.com', is_incoming=True, num_values=5):
@@ -24,10 +24,6 @@ def generate_data(input_file, home_ip, website='youtube.com', is_incoming=True, 
         values = values[0:num_values - 1] + [sum(values[num_values - 1:])]
         shortened = True
     return values, shortened
-
-
-def scale_data(data, total, change=1.):
-    return map(lambda x: x * change * total / float(sum(data)), data)
 
 
 def top_flows_chart(chrome_input_file, android_input_file, chrome_home_ip, android_home_ip, website, is_incoming,

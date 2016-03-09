@@ -21,6 +21,12 @@ class GaplessList:
                 self.list.append(self.fill)
         self.list[pos] = element
 
+    def increment_element(self, pos, increment):
+        try:
+            self.list[pos] += increment
+        except IndexError:
+            self.set_element(pos, increment)
+
     def get_list(self):
         return self.list
 
@@ -52,3 +58,7 @@ def make_storage_ticks(values):
     fn = FuncFormatter(lambda y, pos: '{0:.0f} {1}'.format(round(y / math.pow(1024, power), 0), units[power]))
     tix = np.arange(step_size, 1.1 * max(values), step_size)
     return fn, tix
+
+
+def scale_data(data, total, change=1.):
+    return map(lambda x: x * change * total / float(sum(data)), data)

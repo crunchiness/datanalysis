@@ -1,7 +1,8 @@
-import matplotlib.pyplot as plt
 import numpy as np
 import csv
-import math
+
+import matplotlib.pyplot as plt
+
 from shared import GaplessList, make_stream_id
 
 
