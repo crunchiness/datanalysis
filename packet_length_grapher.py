@@ -161,7 +161,6 @@ def chrome_in_out(show=False):
     output_file = 'chrome_packet_length_in_out.svg'
 
     data_points_in, lengths_dict_in = get_packet_length_data(chrome_file, chrome_ip, website, is_incoming=True)
-    data_points_in = filter(lambda x: x <= 1500, data_points_in)
     ax = plot_packet_length(data_points_in, color='red')
 
     data_points_out, lengths_dict_out = get_packet_length_data(chrome_file, chrome_ip, website, is_incoming=False)
@@ -171,9 +170,25 @@ def chrome_in_out(show=False):
         plt.show()
 
 
-def in_chrome_android(show=False):
-    pass
+def in_out_android_chrome(is_incoming=True, show=False):
+    android_ip = '192.168.0.4'
+    android_file = 'android_combined_dataset.csv'
+    chrome_ip = '10.0.2.15'
+    chrome_file = 'dataset3/out.csv'
+    output_file = '{}_packet_length_android_chrome.svg'.format('in' if is_incoming else 'out')
+    website = 'youtube.com'
+
+    data_points_android, lengths_dict_android = get_packet_length_data(android_file, android_ip, website, is_incoming=is_incoming)
+    ax = plot_packet_length(data_points_android, color='blue')
+
+    data_points_chrome, lengths_dict_chrome = get_packet_length_data(chrome_file, chrome_ip, website, is_incoming=is_incoming)
+    plot_packet_length(data_points_chrome, color='red', ax=ax)
+    plt.savefig(output_file)
+    if show:
+        plt.show()
 
 
 android_in_out()
 chrome_in_out()
+in_out_android_chrome(is_incoming=True)
+in_out_android_chrome(is_incoming=False)
