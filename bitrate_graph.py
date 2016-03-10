@@ -25,7 +25,6 @@ def generate_bitrate_plot_data(input_file, home_ip, website='youtube.com', is_in
 
 def cdf_plot(byte_rate_list, color='red', ax=None, is_log=False):
     x_values = [byte_rate for byte_rate in xrange(int(math.ceil(max(byte_rate_list))) + 1)]
-    print max(x_values)
     y_values = [len(filter(lambda x: x <= byte_rate, byte_rate_list)) for byte_rate in x_values]
     y_values = map(lambda x: x / float(len(byte_rate_list)), y_values)
 
