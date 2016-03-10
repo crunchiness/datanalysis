@@ -4,10 +4,10 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
-from shared import GaplessList, scale_data
+from shared import GaplessList
 
 
-def generate_flow_plot_data(input_file, home_ip, website='youtube.com', is_incoming=True):
+def generate_bitrate_plot_data(input_file, home_ip, website='youtube.com', is_incoming=True):
     start_timestamp = None
     byte_rate_list = GaplessList(fill=0)
 
@@ -25,6 +25,7 @@ def generate_flow_plot_data(input_file, home_ip, website='youtube.com', is_incom
 
 def cdf_plot(byte_rate_list, color='red', ax=None, is_log=False):
     x_values = [byte_rate for byte_rate in xrange(int(math.ceil(max(byte_rate_list))) + 1)]
+    print max(x_values)
     y_values = [len(filter(lambda x: x <= byte_rate, byte_rate_list)) for byte_rate in x_values]
     y_values = map(lambda x: x / float(len(byte_rate_list)), y_values)
 
@@ -68,9 +69,8 @@ def bitrate_cdf_plot(show=False):
     chrome_ip = '10.0.2.15'
     website = 'youtube.com'
 
-    chrome_byte_rate_list = generate_flow_plot_data(chrome_file, chrome_ip, website, is_incoming=True)
-    android_byte_rate_list = generate_flow_plot_data(android_file, android_ip, website, is_incoming=True)
-    # android_byte_rate_list = scale_data(android_byte_rate_list, sum(chrome_byte_rate_list), change=0.9)
+    chrome_byte_rate_list = generate_bitrate_plot_data(chrome_file, chrome_ip, website, is_incoming=True)
+    android_byte_rate_list = generate_bitrate_plot_data(android_file, android_ip, website, is_incoming=True)
 
     ax = cdf_plot(chrome_byte_rate_list, color='red', is_log=False)
     cdf_plot(android_byte_rate_list, color='blue', ax=ax, is_log=False)
@@ -81,7 +81,7 @@ def bitrate_cdf_plot(show=False):
 
     ax = cdf_plot(chrome_byte_rate_list, color='red', is_log=True)
     cdf_plot(android_byte_rate_list, color='blue', ax=ax, is_log=True)
-    plt.savefig('youtube_android_bitrate.svg')
+    plt.savefig('youtube_android_bitrate_log.svg')
     if show:
         plt.show()
     plt.clf()
