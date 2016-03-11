@@ -3,6 +3,8 @@ import csv
 import datetime
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+from shared import storage_formatter_factory
 
 
 def remove_outliers(lengths_dict, low_end=3, high_end=3):
@@ -83,7 +85,7 @@ def length_bar_chart(lengths_dict, no_save=False, show=False, output_file=None):
     plt.clf()
 
 
-def get_packet_length_data(input_file, home_ip, websites, is_incoming=True, ignore_acks=True):
+def get_packet_length_data(input_file, home_ip, websites, is_incoming=True, ignore_acks=True, tso=False):
     lengths_dict = {}
     lengths = []
 
@@ -105,22 +107,28 @@ def get_packet_length_data(input_file, home_ip, websites, is_incoming=True, igno
     # Remove some outliers
     lengths_dict = remove_outliers(lengths_dict)
 
-    return sorted(mock_tso(lengths)), lengths_dict
+    if tso:
+        lengths = mock_tso(lengths)
+
+    return sorted(lengths), lengths_dict
 
 
-def mock_tso(data, mtu=1500):
+def mock_tso(data, mtu=1500, mss=1460):
+    ip_overhead = 20
     new_data = []
     for element in data:
-        full_parts = element / mtu
-        for i in xrange(element / mtu):
-            new_data.append(mtu)
-        leftover = element - full_parts * mtu
-        if leftover > 0:
-            new_data.append(element - full_parts * mtu)
+        if element > mtu:
+            while element > mtu:
+                new_data.append(mss + ip_overhead)
+                element -= mss
+            if element > 0:
+                new_data.append(mss + ip_overhead)
+        else:
+            new_data.append(element)
     return new_data
 
 
-def plot_packet_length(sorted_data, color='red', ax=None, use_log=False):
+def plot_packet_length(sorted_data, color='red', ax=None, use_log=False, storage_units=False):
     y_values = np.arange(len(sorted_data)) / float(len(sorted_data))
     if ax is None:
         fig, ax = plt.subplots()
@@ -130,6 +138,10 @@ def plot_packet_length(sorted_data, color='red', ax=None, use_log=False):
 
     if use_log:
         plt.xscale('log')
+        ax.set_xticks([0, 10, 100, 1024, 10 * 1024, 64 * 1024])
+
+    if storage_units:
+        ax.get_xaxis().set_major_formatter(FuncFormatter(storage_formatter_factory()))
 
     plt.tight_layout()
 
@@ -156,7 +168,6 @@ def android_in_out(show=False):
 def chrome_in_out(show=False):
     chrome_ip = '10.0.2.15'
     website = 'youtube.com'
-    # chrome_file = 'chrome_combined_dataset.csv'
     chrome_file = 'dataset3/out.csv'
     output_file = 'chrome_packet_length_in_out.svg'
 
@@ -170,25 +181,28 @@ def chrome_in_out(show=False):
         plt.show()
 
 
-def in_out_android_chrome(is_incoming=True, show=False):
+def in_out_android_chrome(tso, is_incoming=True, show=False):
     android_ip = '192.168.0.4'
     android_file = 'android_combined_dataset.csv'
     chrome_ip = '10.0.2.15'
     chrome_file = 'dataset3/out.csv'
-    output_file = '{}_packet_length_android_chrome.svg'.format('in' if is_incoming else 'out')
+    output_file = '{}_packet_length_android_chrome{}.svg'.format('in' if is_incoming else 'out', '_tso' if tso else '')
     website = 'youtube.com'
+    use_log = is_incoming and not tso
 
-    data_points_android, lengths_dict_android = get_packet_length_data(android_file, android_ip, website, is_incoming=is_incoming)
-    ax = plot_packet_length(data_points_android, color='blue')
+    data_points_android, lengths_dict_android = get_packet_length_data(android_file, android_ip, website, is_incoming=is_incoming, tso=tso)
+    ax = plot_packet_length(data_points_android, color='blue', use_log=use_log, storage_units=use_log)
 
-    data_points_chrome, lengths_dict_chrome = get_packet_length_data(chrome_file, chrome_ip, website, is_incoming=is_incoming)
-    plot_packet_length(data_points_chrome, color='red', ax=ax)
+    data_points_chrome, lengths_dict_chrome = get_packet_length_data(chrome_file, chrome_ip, website, is_incoming=is_incoming, tso=tso)
+    plot_packet_length(data_points_chrome, color='red', ax=ax, use_log=use_log, storage_units=use_log)
     plt.savefig(output_file)
     if show:
         plt.show()
 
 
-android_in_out()
-chrome_in_out()
-in_out_android_chrome(is_incoming=True)
-in_out_android_chrome(is_incoming=False)
+# android_in_out()
+# chrome_in_out()
+in_out_android_chrome(True, is_incoming=True)
+in_out_android_chrome(True, is_incoming=False)
+in_out_android_chrome(False, is_incoming=True)
+in_out_android_chrome(False, is_incoming=False)

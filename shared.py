@@ -62,3 +62,21 @@ def make_storage_ticks(values):
 
 def scale_data(data, total, change=1.):
     return map(lambda x: x * change * total / float(sum(data)), data)
+
+
+def storage_formatter_factory(unit_speed=False):
+        def storage_formatter(y, pos):
+            if y < 1024:
+                unit = 'B' + ('/s' if unit_speed else '')
+                value = y
+            elif y < 1024 * 1024:
+                unit = 'KB' + ('/s' if unit_speed else '')
+                value = y / 1024.
+            else:
+                unit = 'MB' + ('/s' if unit_speed else '')
+                value = y / float(1024 * 1024)
+            if round(value) == value:
+                return '{0:.0f} {1}'.format(value, unit)
+            else:
+                return '{0:.1f} {1}'.format(value, unit)
+        return storage_formatter

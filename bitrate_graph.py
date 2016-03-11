@@ -4,7 +4,7 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
-from shared import GaplessList
+from shared import GaplessList, storage_formatter_factory
 
 
 def generate_bitrate_plot_data(input_file, home_ip, website='youtube.com', is_incoming=True):
@@ -37,21 +37,7 @@ def cdf_plot(byte_rate_list, color='red', ax=None, is_log=False):
     else:
         ax.set_xticks([0, 200 * 1024, 400 * 1024, 600 * 1024, 800 * 1024, 1024 * 1024, 1.2 * 1024 * 1024, 1.4 * 1024 * 1024])
 
-    def storage_formatter(y, pos):
-        if y < 1024:
-            unit = 'B/s'
-            value = y
-        elif y < 1024 * 1024:
-            unit = 'KB/s'
-            value = y / 1024.
-        else:
-            unit = 'MB/s'
-            value = y / float(1024 * 1024)
-        if round(value) == value:
-            return '{0:.0f} {1}'.format(value, unit)
-        else:
-            return '{0:.1f} {1}'.format(value, unit)
-    ax.get_xaxis().set_major_formatter(FuncFormatter(storage_formatter))
+    ax.get_xaxis().set_major_formatter(FuncFormatter(storage_formatter_factory(unit_speed=True)))
 
     ax.set_ylabel('% Total')
     ax.set_xlabel('Bitrate')
