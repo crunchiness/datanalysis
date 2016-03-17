@@ -65,12 +65,12 @@ def top_flows_chart(chrome_input_file, android_input_file, chrome_home_ip, andro
 
     plt.tight_layout()
 
-
-chrome_ip = '10.0.2.15'
-android_ip = '192.168.0.4'
-website = 'youtube.com'
-chrome_file = 'el_manana/out.csv'
-android_file = 'el_manana/android_el_manana.csv'
-top_flows_chart(chrome_file, android_file, chrome_ip, android_ip, website, True)
-plt.savefig('top_flows_both.svg')
-# plt.show()
+if __name__ == '__main__':
+    chrome_ip = '10.0.2.15'
+    android_ip = '192.168.0.4'
+    website = 'youtube.com'
+    chrome_file = 'el_manana/out.csv'
+    android_file = 'el_manana/android_el_manana.csv'
+    top_flows_chart(chrome_file, android_file, chrome_ip, android_ip, website, True)
+    plt.savefig('top_flows_both.svg')
+    plt.show()
