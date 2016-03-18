@@ -65,7 +65,7 @@ def scale_data(data, total, change=1.):
 
 
 def storage_formatter_factory(unit_speed=False):
-        def storage_formatter(y, pos):
+        def storage_formatter(y, pos=None):
             if y < 1024:
                 unit = 'B' + ('/s' if unit_speed else '')
                 value = y

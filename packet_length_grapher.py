@@ -43,6 +43,7 @@ def length_bar_chart(lengths, no_save=False, show=False, output_file=None):
     # count packets
     total_packets = sum(map(lambda x: sum(x[1].values()), lengths))
 
+    # threshold = total_packets / 20  # 1 percent
     threshold = total_packets / 100  # 1 percent
 
     # group counts
@@ -118,6 +119,7 @@ def get_packet_length_data(input_file, home_ip, websites, is_incoming=True, igno
                 continue
             if websites[0] in row['website']:
                 if row['dst' if is_incoming else 'src'] == home_ip:
+                    # if 40 < int(row['len']) < 1458:
                     lengths.append(int(row['len']))
                     if need_ids:
                         ids.append(make_stream_id(row['src'], row['src_port'], row['dst'], row['dst_port']))
@@ -334,6 +336,7 @@ def get_small_big_source(is_chrome=True, show=False):
 
     length_dict = sum_length_dicts(length_dicts)
     length_list = sorted(length_dict.items(), cmp=lambda x, y: x[0] - y[0], reverse=False)
+    # print length_list, sum(map(lambda x: sum(x[1].values()), length_list))
     length_bar_chart(length_list, show=show, output_file='small_big_source_{}.svg'.format('chrome' if is_chrome else 'android'))
 
 
@@ -366,5 +369,5 @@ if __name__ == '__main__':
     # count_size()
     # in_out_android_chrome_el_manana(True, is_incoming=True)
     # in_out_android_chrome_el_manana(True, is_incoming=False)
-    get_small_big_source(is_chrome=True)
+    # get_small_big_source(is_chrome=True)
     get_small_big_source(is_chrome=False)
