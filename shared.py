@@ -31,8 +31,14 @@ class GaplessList:
         return self.list
 
 
-def make_stream_id(src, src_port, dst, dst_port, protocol='TCP'):
-    return '{0}:{1}-{2}:{3}-{4}'.format(src, src_port, dst, dst_port, protocol)
+def make_stream_id(src, src_port, dst, dst_port, protocol='TCP', q_cid='0'):
+    if protocol == 'TCP':
+        return '{0}:{1}-{2}:{3}-{4}'.format(src, src_port, dst, dst_port, protocol)
+    elif protocol == 'UDP':
+        if q_cid in ['', '0']:
+            return '{0}:{1}-{2}:{3}-{4}'.format(src, src_port, dst, dst_port, protocol)
+        else:
+            return '{0}-{1}'.format(q_cid, protocol)
 
 
 def make_storage_ticks(values):
