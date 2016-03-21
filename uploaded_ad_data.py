@@ -20,7 +20,7 @@ def get_ad_streams(input_file, home_ip, website='youtube.com', is_incoming=False
             if website in row['website']:
                 if row['dst' if is_incoming else 'src'] == home_ip:
                     if row['url'] != '':
-                        stream_id = make_stream_id(row['src'], row['src_port'], row['dst'], row['dst_port'])
+                        stream_id = make_stream_id(row)
                         try:
                             ad_dict[stream_id].append(row['url'])
                         except KeyError:
@@ -40,7 +40,7 @@ def get_stream_sizes(input_file, home_ip, stream_ids, is_incoming=False):
                 continue
             if row['dst' if is_incoming else 'src'] == home_ip:
                 all_sizes += int(row['len'])
-                this_stream_id = make_stream_id(row['src'], row['src_port'], row['dst'], row['dst_port'])
+                this_stream_id = make_stream_id(row)
                 for i, stream_id in enumerate(stream_ids):
                     if stream_id == this_stream_id:
                         sizes[i] += int(row['len'])
@@ -70,4 +70,4 @@ def get_ad_sizes(print_urls=False):
 
 
 if __name__ == '__main__':
-    get_ad_sizes()
+    get_ad_sizes(print_urls=True)

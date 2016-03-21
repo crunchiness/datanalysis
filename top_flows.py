@@ -16,9 +16,9 @@ def generate_data(input_file, home_ip, website='youtube.com', is_incoming=True, 
             if website in row['website'] and (row['protocol'] in protocols):
                 if row['dst' if is_incoming else 'src'] == home_ip:
                     try:
-                        stream_id = make_stream_id(row['src'], row['src_port'], row['dst'], row['dst_port'], protocol=row['protocol'], q_cid=row['q_cid'])
+                        stream_id = make_stream_id(row)
                     except KeyError:
-                        stream_id = make_stream_id(row['src'], row['src_port'], row['dst'], row['dst_port'], protocol=row['protocol'])
+                        stream_id = make_stream_id(row)
                     try:
                         packet_sums[stream_id] += int(row['len'])
                     except KeyError:
@@ -77,11 +77,11 @@ def top_flows_chart(chrome_input_file, android_input_file, chrome_home_ip, andro
 
 
 def top_charts_mixed_protocols(input_file, home_ip, website, is_incoming=True):
-    num_values = 6
+    num_values = 5
     quic_data, shortened = generate_data(input_file, home_ip, website=website, is_incoming=True, num_values=num_values, protocols=['TCP', 'UDP'])
 
     # separate data and protocol names
-    top_labels = map(lambda x: 'QUIC' if x[0] == 'UDP' else x[0], quic_data)
+    top_labels = map(lambda x: x[0], quic_data)
     data = map(lambda x: x[1], quic_data)
 
     # make labels
@@ -91,12 +91,10 @@ def top_charts_mixed_protocols(input_file, home_ip, website, is_incoming=True):
 
     ind = np.array(map(lambda x: x, np.arange(num_values)))  # the x locations for the groups
 
-    width = 0.35  # the width of the bars
+    width = 0.5  # the width of the bars
 
     fig, ax = plt.subplots()
     chrome_bars = ax.bar(ind, data, width, color='red')
-
-    # ax.legend((chrome_bars, android_bars), ('YouTube Chrome', 'YouTube Android'))
 
     # add some text for labels, title and axes ticks
     ax.set_ylabel('Data transferred')
@@ -145,5 +143,5 @@ def do_top_flows(show=False):
 
 
 if __name__ == '__main__':
-    do_top_flows(show=True)
-    do_quic_flows()
+    do_top_flows()
+    do_quic_flows(show=True)

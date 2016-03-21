@@ -105,8 +105,10 @@ def length_bar_chart(lengths, no_save=False, show=False, output_file=None):
     plt.clf()
 
 
-def get_packet_length_data(input_file, home_ip, websites, is_incoming=True, ignore_acks=True, tso=False, need_ids=False):
+def get_packet_length_data(input_file, home_ip, website, is_incoming=True, ignore_acks=True, tso=False, need_ids=False, protocols=None):
     # lengths_dict = {}
+    if protocols is None:
+        protocols = ['TCP']
     lengths = []
     ids = [] if need_ids else None
 
@@ -115,14 +117,12 @@ def get_packet_length_data(input_file, home_ip, websites, is_incoming=True, igno
         for row in data_reader:
             if ignore_acks and row['is_ack'] == 'True':
                 continue
-            if row['protocol'] != 'TCP':
-                continue
-            if websites[0] in row['website']:
+            if website in row['website'] and (row['protocol'] in protocols):
                 if row['dst' if is_incoming else 'src'] == home_ip:
                     # if 40 < int(row['len']) < 1458:
                     lengths.append(int(row['len']))
                     if need_ids:
-                        ids.append(make_stream_id(row['src'], row['src_port'], row['dst'], row['dst_port']))
+                        ids.append(make_stream_id(row))
 
     if tso:
         lengths, ids = mock_tso(lengths, ids)
@@ -359,6 +359,29 @@ def sum_length_dicts(length_dicts):
                     merged_dicts[length] = {key: value}
     return merged_dicts
 
+
+def do_quic_lengths():
+    home_ip = '10.0.2.15'
+    quic_file = 'quic-manana/out.csv'
+    website = 'youtube.com'
+    lengths, _ = get_packet_length_data(quic_file, home_ip, website, is_incoming=True, tso=False, protocols=['UDP'])
+
+    length_dict = {}
+    total = 0
+    for length in lengths:
+        try:
+            length_dict[length] += 1
+        except KeyError:
+            length_dict[length] = 1
+        total += 1
+    asdf = sorted(length_dict.items(), cmp=lambda x, y: x[1] - y[1], reverse=True)
+    asdf = map(lambda x: (x[0], '{0:.2f}%'.format(x[1] * 100 / float(total))), asdf)
+    ax = plot_packet_length(lengths, color='blue', use_log=False, storage_units=False)
+    plt.savefig('gaidys.svg')
+    if True:
+        plt.show()
+
+
 if __name__ == '__main__':
     # android_in_out()
     # chrome_in_out()
@@ -370,4 +393,5 @@ if __name__ == '__main__':
     # in_out_android_chrome_el_manana(True, is_incoming=True)
     # in_out_android_chrome_el_manana(True, is_incoming=False)
     # get_small_big_source(is_chrome=True)
-    get_small_big_source(is_chrome=False)
+    # get_small_big_source(is_chrome=False)
+    do_quic_lengths()
