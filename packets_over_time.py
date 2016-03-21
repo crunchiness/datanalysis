@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 from shared import make_storage_ticks, make_stream_id
 
 
-def plot_thing(input_file, home_ip, plot_all=True, plot_second=False, plot_rest=False, website='youtube.com', is_down=True, colors=None, chart=None, names=None, sizes=True):
+def plot_thing(input_file, home_ip, plot_all=True, plot_second=False, plot_rest=False, website='youtube.com', is_incoming=True, colors=None, chart=None, names=None, sizes=True, protocols=None):
+    if protocols is None:
+        protocols = ['TCP']
     if names is None:
         names = ['All streams', 'Top stream', 'Rest']
     if colors is None:
@@ -21,12 +23,9 @@ def plot_thing(input_file, home_ip, plot_all=True, plot_second=False, plot_rest=
     with open(input_file, 'rb') as csv_file:
         data_reader = csv.DictReader(csv_file, delimiter=',')
         for row in data_reader:
-            if website in row['website'] and row['protocol'] == 'TCP':
-                # # incoming
-                # if row['dst'] == home_ip and row['is_ack'] == 'False':
-                # outgoing
-                if row['dst' if is_down else 'src'] == home_ip and row['is_ack'] == 'False':
-                    stream_id = make_stream_id(row['src'], row['src_port'], row['dst'], row['dst_port'])
+            if website in row['website'] and (row['protocol'] in protocols):
+                if row['dst' if is_incoming else 'src'] == home_ip and row['is_ack'] == 'False':
+                    stream_id = make_stream_id(row)
                     try:
                         streams[stream_id].append((float(row['timestamp']), int(row['len'])))
                     except KeyError:
@@ -118,55 +117,66 @@ def plot(which, show):
         }
 
     if which in 'el_manana_android_over_time_incoming_1':
-        plot_thing(android['file'], android['ip'], is_down=True, colors=['r'], names=['All streams'])
+        plot_thing(android['file'], android['ip'], is_incoming=True, colors=['r'], names=['All streams'])
         plt.savefig('el_manana_android_over_time_incoming.svg')
         if show:
             plt.show()
         plt.clf()
     if which in 'el_manana_android_over_time_incoming_2':
-        plot_thing(android['file'], android['ip'], plot_second=True, is_down=True, colors=['r', 'g'], names=['All streams', 'Top stream'])
+        plot_thing(android['file'], android['ip'], plot_second=True, is_incoming=True, colors=['r', 'g'], names=['All streams', 'Top stream'])
         plt.savefig('el_manana_android_over_time_incoming_2.svg')
         if show:
             plt.show()
         plt.clf()
     if which in 'el_manana_android_over_time_incoming_3':
-        plot_thing(android['file'], android['ip'], plot_second=True, plot_rest=True, is_down=True, colors=['r', 'g', 'b'], names=['All streams', 'Top stream', 'Rest'])
+        plot_thing(android['file'], android['ip'], plot_second=True, plot_rest=True, is_incoming=True, colors=['r', 'g', 'b'], names=['All streams', 'Top stream', 'Rest'])
         plt.savefig('el_manana_android_over_time_incoming_3.svg')
         if show:
             plt.show()
         plt.clf()
     if which in 'el_manana_chrome_over_time_incoming_1':
-        plot_thing(chrome['file'], chrome['ip'], is_down=True, colors=['r'], names=['All streams'])
+        plot_thing(chrome['file'], chrome['ip'], is_incoming=True, colors=['r'], names=['All streams'])
         plt.savefig('el_manana_chrome_over_time_incoming.svg')
         if show:
             plt.show()
         plt.clf()
     if which in 'el_manana_chrome_over_time_incoming_2':
-        plot_thing(chrome['file'], chrome['ip'], plot_second=True, is_down=True, colors=['r', 'g'], names=['All streams', 'Top stream'])
+        plot_thing(chrome['file'], chrome['ip'], plot_second=True, is_incoming=True, colors=['r', 'g'], names=['All streams', 'Top stream'])
         plt.savefig('el_manana_chrome_over_time_incoming_2.svg')
         if show:
             plt.show()
         plt.clf()
     if which in 'el_manana_chrome_over_time_incoming_3':
-        plot_thing(chrome['file'], chrome['ip'], plot_second=True, plot_rest=True, is_down=True, colors=['r', 'g', 'b'], names=['All streams', 'Top stream', 'Rest'])
+        plot_thing(chrome['file'], chrome['ip'], plot_second=True, plot_rest=True, is_incoming=True, colors=['r', 'g', 'b'], names=['All streams', 'Top stream', 'Rest'])
         plt.savefig('el_manana_chrome_over_time_incoming_3.svg')
         if show:
             plt.show()
         plt.clf()
     if which in 'el_manana_both_incoming':
-        chart = plot_thing(chrome['file'], chrome['ip'], colors=['r'], is_down=True, names=['YouTube Chrome'])
-        plot_thing(android['file'], android['ip'], colors=['b'], is_down=True, chart=chart, names=['YouTube Android'])
+        chart = plot_thing(chrome['file'], chrome['ip'], colors=['r'], is_incoming=True, names=['YouTube Chrome'])
+        plot_thing(android['file'], android['ip'], colors=['b'], is_incoming=True, chart=chart, names=['YouTube Android'])
         plt.savefig('el_manana_both_incoming.svg')
         if show:
             plt.show()
         plt.clf()
     if which in 'el_manana_both_outgoing':
-        chart = plot_thing(android['file'], android['ip'], colors=['b'], is_down=False, names=['YouTube Android'])
-        plot_thing(chrome['file'], chrome['ip'], colors=['r'], is_down=False, names=['YouTube Chrome'], chart=chart)
-
+        chart = plot_thing(android['file'], android['ip'], colors=['b'], is_incoming=False, names=['YouTube Android'])
+        plot_thing(chrome['file'], chrome['ip'], colors=['r'], is_incoming=False, names=['YouTube Chrome'], chart=chart)
         plt.savefig('el_manana_both_outgoing.svg')
         if show:
             plt.show()
         plt.clf()
 
-plot('el_manana', True)
+
+def plot_quic(show=False):
+    quic_file = 'quic-manana/out.csv'
+    home_ip = '10.0.2.15'
+    plot_thing(quic_file, home_ip, website='youtube.com', is_incoming=True, plot_all=True, names=['All streams'], protocols=['UDP', 'TCP'])
+    plt.savefig('quic_over_time.svg')
+    if show:
+        plt.show()
+    plt.clf()
+
+if __name__ == '__main__':
+    # plot('el_manana', True)
+    plot_quic(show=True)

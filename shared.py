@@ -31,14 +31,25 @@ class GaplessList:
         return self.list
 
 
-def make_stream_id(src, src_port, dst, dst_port, protocol='TCP', q_cid='0'):
+def make_stream_id(row):
+    try:
+        q_cid = row['q_cid']
+    except KeyError:
+        q_cid = ''
+
+    src = row['src']
+    src_port = row['src_port']
+    dst = row['dst']
+    dst_port = row['dst_port']
+    protocol = row['protocol']
+
     if protocol == 'TCP':
         return '{0}:{1}-{2}:{3}-{4}'.format(src, src_port, dst, dst_port, protocol)
     elif protocol == 'UDP':
         if q_cid in ['', '0']:
-            return '{0}:{1}-{2}:{3}-{4}'.format(src, src_port, dst, dst_port, protocol)
+            return '{0}:{1}-{2}:{3}-{4}'.format(src, src_port, dst, dst_port, 'QUIC')
         else:
-            return '{0}-{1}'.format(q_cid, protocol)
+            return '{0}-{1}'.format(q_cid, 'QUIC')
 
 
 def make_storage_ticks(values):
@@ -61,7 +72,7 @@ def make_storage_ticks(values):
             power += 1
     if (1.1 * max(values) - step_size) / step_size < 5:
         step_size /= 5
-    fn = FuncFormatter(lambda y, pos: '{0:.0f} {1}'.format(round(y / math.pow(1024, power), 0), units[power]))
+    fn = FuncFormatter(lambda y, pos: '{0:.1f} {1}'.format(round(y / math.pow(1024, power), 1), units[power]))
     tix = np.arange(step_size, 1.1 * max(values), step_size)
     return fn, tix
 
@@ -84,5 +95,5 @@ def storage_formatter_factory(unit_speed=False):
             if round(value) == value:
                 return '{0:.0f} {1}'.format(value, unit)
             else:
-                return '{0:.1f} {1}'.format(value, unit)
+                return '{0:.1f} {1}'.format(round(value, 1), unit)
         return storage_formatter
