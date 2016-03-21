@@ -19,7 +19,7 @@ def generate_flow_plot_data(input_file, home_ip, website='youtube.com', is_incom
             start_timestamp = float(row['timestamp']) if start_timestamp is None else start_timestamp
             if website in row['website'] and row['protocol'] == 'TCP':
                 if row['dst' if is_incoming else 'src'] == home_ip:
-                    stream_id = make_stream_id(row['src'], row['src_port'], row['dst'], row['dst_port'])
+                    stream_id = make_stream_id(row)
                     if row['is_rst'] == 'False' and row['is_fin'] == 'False' and stream_id not in closed_set:
                         stream_set.add(stream_id)
                     else:
@@ -107,35 +107,6 @@ def overlay_cdf_plot(show=False):
     plt.clf()
 
 
-# def videos_10(show=False):
-#     chrome_ip = '10.0.2.15'
-#     chrome_file_name = 'videos-10/chrome-10/video-{0}/out.csv'
-#     chrome_numbers = []
-#     for i in range(1, 11):
-#         file_name = chrome_file_name.format(i)
-#         chrome_data = generate_flow_plot_data(file_name, chrome_ip, website, True)
-#         chrome_numbers.append(sum(chrome_data) / float(len(chrome_data)))
-#         cdf_plot(file_name, chrome_ip, website, True, color='red')
-#         plt.savefig('chrome_video-{0}.svg'.format(i))
-#         if show:
-#             plt.show()
-#         plt.clf()
-#     print sorted(chrome_numbers)
-#     android_ip = '192.168.0.4'
-#     android_file_name = 'videos-10/android-10/video-{0}/out.csv'
-#     android_numbers = []
-#     for i in range(1, 11):
-#         file_name = android_file_name.format(i)
-#         android_data = generate_flow_plot_data(file_name, android_ip, website, True)
-#         android_numbers.append(sum(android_data) / float(len(android_data)))
-#         cdf_plot(file_name, android_ip, website, True, color='red')
-#         plt.savefig('android_video-{0}.svg'.format(i))
-#         if show:
-#             plt.show()
-#         plt.clf()
-#     print sorted(android_numbers)
-
-
 def videos_10(show=False):
     chrome_ip = '10.0.2.15'
     chrome_file_name = 'videos-10/chrome-10/video-{0}/out.csv'
@@ -175,8 +146,8 @@ def videos_10(show=False):
         plt.show()
     plt.clf()
 
-# run_all(False)
-# overlay_flow_plot(True)
-# overlay_cdf_plot(True)
-# videos_10()
-videos_10()
+if __name__ == '__main__':
+    # run_all(False)
+    # overlay_flow_plot(True)
+    overlay_cdf_plot(True)
+    # videos_10(show=True)
