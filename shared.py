@@ -97,3 +97,13 @@ def storage_formatter_factory(unit_speed=False):
             else:
                 return '{0:.1f} {1}'.format(round(value, 1), unit)
         return storage_formatter
+
+
+def pretty_name(website):
+        if website == 'youtube.com':
+            pretty = 'YouTube'
+        elif website == 'netflix.com':
+            pretty = 'Netflix'
+        else:
+            pretty = website
+        return lambda x: x.format(pretty)

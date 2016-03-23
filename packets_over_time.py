@@ -168,6 +168,26 @@ def plot(which, show):
         plt.clf()
 
 
+def netflix_plot(show=False):
+    android_file = 'steinsgate_dump/android/out.csv'
+    android_ip = '192.168.0.4'
+    chrome_file = 'steinsgate_dump/chrome/out.csv'
+    chrome_ip = '10.0.2.15'
+    website = 'netflix.com'
+
+    plot_thing(android_file, android_ip, website=website, is_incoming=True, colors=['r'], names=['All streams'])
+    plt.savefig('{}_android_over_time_incoming.svg'.format(website))
+    if show:
+        plt.show()
+    plt.clf()
+
+    plot_thing(chrome_file, chrome_ip, website=website, is_incoming=True, colors=['r'], names=['All streams'])
+    plt.savefig('{}_chrome_over_time_incoming.svg'.format(website))
+    if show:
+        plt.show()
+    plt.clf()
+
+
 def plot_quic(show=False):
     quic_file = 'quic-manana/out.csv'
     home_ip = '10.0.2.15'
@@ -179,4 +199,5 @@ def plot_quic(show=False):
 
 if __name__ == '__main__':
     # plot('el_manana', True)
-    plot_quic(show=True)
+    # plot_quic(show=True)
+    netflix_plot(show=True)
