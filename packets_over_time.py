@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from shared import make_storage_ticks, make_stream_id
 
 
-def plot_thing(input_file, home_ip, plot_all=True, plot_second=False, plot_rest=False, website='youtube.com', is_incoming=True, colors=None, chart=None, names=None, sizes=True, protocols=None):
+def plot_thing(input_file, home_ip, plot_all=True, plot_first=False, plot_second=False, plot_rest=False, website='youtube.com', is_incoming=True, colors=None, chart=None, names=None, sizes=True, protocols=None):
     if protocols is None:
         protocols = ['TCP']
     if names is None:
@@ -72,7 +72,9 @@ def plot_thing(input_file, home_ip, plot_all=True, plot_second=False, plot_rest=
         fig, ax, plot_line_list, plot_name_list = chart
 
     top_stream = sorted(sorted_streams, key=lambda stream: len(stream), reverse=True)[0]
-    second_top_stream = reduce(lambda x, y: x + y, sorted(sorted_streams, key=lambda stream: len(stream), reverse=True)[1:], [])
+    second_stream = sorted(sorted_streams, key=lambda stream: len(stream), reverse=True)[1]
+    rest_start_index = 2 if plot_second else 1
+    rest_streams = reduce(lambda x, y: x + y, sorted(sorted_streams, key=lambda stream: len(stream), reverse=True)[rest_start_index:], [])
 
     i = 0
     all_values = []
@@ -83,15 +85,21 @@ def plot_thing(input_file, home_ip, plot_all=True, plot_second=False, plot_rest=
         plot_line_list.append(red_line[0])
         plot_name_list.append(names[i])
         i += 1
-    if plot_second:
+    if plot_first:
         values = put_in_bins(top_stream, sizes)
         all_values.extend(values)
         blue_line = plt.plot(values, colors[i] + '-')
         plot_line_list.append(blue_line[0])
         plot_name_list.append(names[i])
         i += 1
+    if plot_second:
+        values = put_in_bins(second_stream, sizes)
+        all_values.extend(values)
+        magenta_line = plt.plot(values, colors[i] + '-')
+        plot_line_list.append(magenta_line[0])
+        plot_name_list.append(names[i])
     if plot_rest:
-        values = put_in_bins(second_top_stream, sizes)
+        values = put_in_bins(rest_streams, sizes)
         all_values.extend(values)
         green_line = plt.plot(values, colors[i] + '-')
         plot_line_list.append(green_line[0])
@@ -123,13 +131,13 @@ def plot(which, show):
             plt.show()
         plt.clf()
     if which in 'el_manana_android_over_time_incoming_2':
-        plot_thing(android['file'], android['ip'], plot_second=True, is_incoming=True, colors=['r', 'g'], names=['All streams', 'Top stream'])
+        plot_thing(android['file'], android['ip'], plot_first=True, is_incoming=True, colors=['r', 'g'], names=['All streams', 'Top stream'])
         plt.savefig('el_manana_android_over_time_incoming_2.svg')
         if show:
             plt.show()
         plt.clf()
     if which in 'el_manana_android_over_time_incoming_3':
-        plot_thing(android['file'], android['ip'], plot_second=True, plot_rest=True, is_incoming=True, colors=['r', 'g', 'b'], names=['All streams', 'Top stream', 'Rest'])
+        plot_thing(android['file'], android['ip'], plot_first=True, plot_rest=True, is_incoming=True, colors=['r', 'g', 'b'], names=['All streams', 'Top stream', 'Rest'])
         plt.savefig('el_manana_android_over_time_incoming_3.svg')
         if show:
             plt.show()
@@ -141,13 +149,13 @@ def plot(which, show):
             plt.show()
         plt.clf()
     if which in 'el_manana_chrome_over_time_incoming_2':
-        plot_thing(chrome['file'], chrome['ip'], plot_second=True, is_incoming=True, colors=['r', 'g'], names=['All streams', 'Top stream'])
+        plot_thing(chrome['file'], chrome['ip'], plot_first=True, is_incoming=True, colors=['r', 'g'], names=['All streams', 'Top stream'])
         plt.savefig('el_manana_chrome_over_time_incoming_2.svg')
         if show:
             plt.show()
         plt.clf()
     if which in 'el_manana_chrome_over_time_incoming_3':
-        plot_thing(chrome['file'], chrome['ip'], plot_second=True, plot_rest=True, is_incoming=True, colors=['r', 'g', 'b'], names=['All streams', 'Top stream', 'Rest'])
+        plot_thing(chrome['file'], chrome['ip'], plot_first=True, plot_rest=True, is_incoming=True, colors=['r', 'g', 'b'], names=['All streams', 'Top stream', 'Rest'])
         plt.savefig('el_manana_chrome_over_time_incoming_3.svg')
         if show:
             plt.show()
@@ -166,6 +174,18 @@ def plot(which, show):
         if show:
             plt.show()
         plt.clf()
+
+
+def plot_audio_video(show=False):
+    # android_file = 'el_manana/android_el_manana.csv',
+    # android_ip = '192.168.0.4'
+    chrome_file = 'el_manana/out.csv'
+    chrome_ip = '10.0.2.15'
+    plot_thing(chrome_file, chrome_ip, colors=['b', 'r'], plot_all=False, plot_first=True, plot_second=True, plot_rest=False, is_incoming=True, names=['YouTube Chrome video stream', 'YouTube Chrome audio stream'])
+    plt.savefig('el_manana_chrome_over_time_audio_video.svg')
+    if show:
+        plt.show()
+    plt.clf()
 
 
 def netflix_plot(show=False):
@@ -200,4 +220,5 @@ def plot_quic(show=False):
 if __name__ == '__main__':
     # plot('el_manana', True)
     # plot_quic(show=True)
-    netflix_plot(show=True)
+    # netflix_plot(show=True)
+    plot_audio_video(show=True)
