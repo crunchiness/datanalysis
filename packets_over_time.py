@@ -98,6 +98,7 @@ def plot_thing(input_file, home_ip, plot_all=True, plot_first=False, plot_second
         magenta_line = plt.plot(values, colors[i] + '-')
         plot_line_list.append(magenta_line[0])
         plot_name_list.append(names[i])
+        i += 1
     if plot_rest:
         values = put_in_bins(rest_streams, sizes)
         all_values.extend(values)
