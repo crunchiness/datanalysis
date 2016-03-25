@@ -1,10 +1,9 @@
 import csv
-
 import math
-import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
 
-from shared import make_stream_id, pretty_name, storage_formatter_factory, make_storage_ticks
+import matplotlib.pyplot as plt
+
+from shared import make_stream_id, pretty_name, make_storage_ticks
 
 
 def generate_data(input_file, home_ip, website='youtube.com', protocols=None):
@@ -69,7 +68,6 @@ def plot_accumulated_data(input_file, home_ip, website, platform, show=False):
     ax.yaxis.set_major_formatter(fn)
     plt.yticks(tix)
 
-    plt.xlim((0, 200))
     red_line = plt.plot(map(lambda x: x[1], all_stream_data['time']), color='red')
     blue_line = plt.plot(map(lambda x: x[1], video_stream_data['time']), color='blue')
     green_line = plt.plot(map(lambda x: x[1], audio_stream_data['time']), color='green')
@@ -79,13 +77,14 @@ def plot_accumulated_data(input_file, home_ip, website, platform, show=False):
         plt.show()
 
 
-def youtube_plot_accumulated_data():
+def youtube_plot_accumulated_data(show=False):
     android_file = 'el_manana/android_el_manana.csv'
     android_ip = '192.168.0.4'
     chrome_file = 'el_manana/out.csv'
     chrome_ip = '10.0.2.15'
     website = 'youtube.com'
-    plot_accumulated_data(chrome_file, chrome_ip, website, platform='chrome')
-    plot_accumulated_data(android_file, android_ip, website, platform='android')
+    plot_accumulated_data(chrome_file, chrome_ip, website, platform='chrome', show=show)
+    plot_accumulated_data(android_file, android_ip, website, platform='android', show=show)
 
-youtube_plot_accumulated_data()
+if __name__ == '__main__':
+    youtube_plot_accumulated_data(show=False)
