@@ -3,7 +3,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from shared import make_stream_id, make_storage_ticks, scale_data
+from shared import make_stream_id, make_storage_ticks, scale_data, pretty_name
 
 
 def generate_data(input_file, home_ip, website='youtube.com', is_incoming=True, num_values=5, protocols=None):
@@ -15,10 +15,7 @@ def generate_data(input_file, home_ip, website='youtube.com', is_incoming=True, 
         for row in data_reader:
             if website in row['website'] and (row['protocol'] in protocols):
                 if row['dst' if is_incoming else 'src'] == home_ip:
-                    try:
-                        stream_id = make_stream_id(row)
-                    except KeyError:
-                        stream_id = make_stream_id(row)
+                    stream_id = make_stream_id(row)
                     try:
                         packet_sums[stream_id] += int(row['len'])
                     except KeyError:
@@ -44,7 +41,7 @@ def top_flows_chart(chrome_input_file, android_input_file, chrome_home_ip, andro
     chrome_data = map(lambda x: x[1], chrome_data)
     android_data, android_shortened = generate_data(android_input_file, android_home_ip, website, is_incoming)
     android_data = map(lambda x: x[1], android_data)
-    # android_data = scale_data(android_data, sum(chrome_data), 0.9)
+    android_data = scale_data(android_data, sum(chrome_data), 1)
     num_values = max(len(chrome_data), len(android_data))
     shortened = chrome_shortened if len(chrome_data) > len(android_data) else android_shortened
 
@@ -60,7 +57,7 @@ def top_flows_chart(chrome_input_file, android_input_file, chrome_home_ip, andro
     chrome_bars = ax.bar(ind, chrome_data, width, color=chrome_color)
     android_bars = ax.bar(ind + width, android_data, width, color=android_color)
 
-    ax.legend((chrome_bars[0], android_bars[0]), ('YouTube Chrome', 'YouTube Android'))
+    ax.legend((chrome_bars[0], android_bars[0]), map(pretty_name(website),  ['{} Chrome', '{} Android']))
 
     # add some text for labels, title and axes ticks
     ax.set_ylabel('Data transferred')
@@ -129,19 +126,32 @@ def do_quic_flows(show=False):
     plt.clf()
 
 
-def do_top_flows(show=False):
-    chrome_ip = '10.0.2.15'
-    android_ip = '192.168.0.4'
-    website = 'youtube.com'
-    chrome_file = 'el_manana/out.csv'
-    android_file = 'el_manana/android_el_manana.csv'
+def do_top_flows(android_file, chrome_file, android_ip, chrome_ip, website, show=False):
     top_flows_chart(chrome_file, android_file, chrome_ip, android_ip, website, True)
-    plt.savefig('top_flows_both.svg')
+    plt.savefig('{} top_flows_both.svg'.format(website))
     if show:
         plt.show()
     plt.clf()
 
 
+def youtube_top_flows(show=False):
+    chrome_ip = '10.0.2.15'
+    android_ip = '192.168.0.4'
+    website = 'youtube.com'
+    chrome_file = 'el_manana/out.csv'
+    android_file = 'el_manana/android_el_manana.csv'
+    do_top_flows(android_file, chrome_file, android_ip, chrome_ip, website, show=show)
+
+
+def netflix_top_flows(show=False):
+    android_file = 'steinsgate_dump/android/out.csv'
+    android_ip = '192.168.0.4'
+    chrome_file = 'steinsgate_dump/chrome/out.csv'
+    chrome_ip = '10.0.2.15'
+    website = 'netflix.com'
+    do_top_flows(android_file, chrome_file, android_ip, chrome_ip, website, show=show)
+
 if __name__ == '__main__':
-    do_top_flows()
-    do_quic_flows(show=True)
+    # youtube_top_flows()
+    # do_quic_flows(show=True)
+    netflix_top_flows()

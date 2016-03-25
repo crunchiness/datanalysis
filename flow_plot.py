@@ -55,61 +55,83 @@ def cdf_plot(input_file, home_ip, website, is_incoming, color='red', ax=None):
     return ax
 
 
-website = 'youtube.com'
-everything = {
-    'youtube_android_connections': {
-        'file': 'el_manana/android_el_manana.csv',
-        'ip': '192.168.0.4'
-    },
-    'youtube_chrome_connections': {
-        'file': 'el_manana/out.csv',
-        'ip': '10.0.2.15'
-    },
-    'youtube_chrome_autoplay_connections': {
-        'file': 'dataset4/out.csv',
-        'ip': '10.0.2.15'
-    }
-}
-
-
 def run_all(show=False):
-    overlay_flow_plot(show)
-    overlay_cdf_plot(show)
-
-    flow_plot(everything['youtube_chrome_autoplay_connections']['file'], everything['youtube_chrome_autoplay_connections']['ip'], website, True)
+    youtube_overlay_flow_plot(show)
+    youtube_overlay_cdf_plot(show)
+    chrome_autoplay_file = 'dataset4/out.csv'
+    chrome_autoplay_ip = '10.0.2.15'
+    website = 'youtube.com'
+    flow_plot(chrome_autoplay_file, chrome_autoplay_ip, website, True)
     plt.savefig('youtube_chrome_autoplay_connections_flow.svg')
     if show:
         plt.show()
     plt.clf()
 
-    cdf_plot(everything['youtube_chrome_autoplay_connections']['file'], everything['youtube_chrome_autoplay_connections']['ip'], website, True)
+    cdf_plot(chrome_autoplay_file, chrome_autoplay_ip, website, True)
     plt.savefig('youtube_chrome_autoplay_connections_cdf.svg')
     if show:
         plt.show()
     plt.clf()
 
 
-def overlay_flow_plot(show=False):
-    ax = flow_plot(everything['youtube_chrome_connections']['file'], everything['youtube_chrome_connections']['ip'], website, True, color='red')
-    flow_plot(everything['youtube_android_connections']['file'], everything['youtube_android_connections']['ip'], website, True, color='blue', ax=ax)
-    plt.savefig('youtube_android_chrome_flow_plot_over_time.svg')
+def overlay_flow_plot(android_file, chrome_file, android_ip, chrome_ip, website, show=False):
+    ax = flow_plot(chrome_file, chrome_ip, website, True, color='red')
+    flow_plot(android_file, android_ip, website, True, color='blue', ax=ax)
+    plt.savefig('{}_android_chrome_flow_plot_over_time.svg'.format(website))
     if show:
         plt.show()
     plt.clf()
 
 
-def overlay_cdf_plot(show=False):
-    ax = cdf_plot(everything['youtube_chrome_connections']['file'], everything['youtube_chrome_connections']['ip'], website, True, color='red')
-    cdf_plot(everything['youtube_android_connections']['file'], everything['youtube_android_connections']['ip'], website, True, color='blue', ax=ax)
-    plt.savefig('youtube_android_chrome_cdf_plot_over_time.svg')
+def overlay_cdf_plot(android_file, chrome_file, android_ip, chrome_ip, website, show=False):
+    ax = cdf_plot(chrome_file, chrome_ip, website, True, color='red')
+    cdf_plot(android_file, android_ip, website, True, color='blue', ax=ax)
+    plt.savefig('{}_android_chrome_cdf_plot_over_time.svg'.format(website))
     if show:
         plt.show()
     plt.clf()
+
+
+def netflix_overlay_flow_plot(show=False):
+    android_file = 'steinsgate_dump/android/out.csv'
+    android_ip = '192.168.0.4'
+    chrome_file = 'steinsgate_dump/chrome/out.csv'
+    chrome_ip = '10.0.2.15'
+    website = 'netflix.com'
+    overlay_flow_plot(android_file, chrome_file, android_ip, chrome_ip, website, show)
+
+
+def netflix_overlay_cdf_plot(show=False):
+    android_file = 'steinsgate_dump/android/out.csv'
+    android_ip = '192.168.0.4'
+    chrome_file = 'steinsgate_dump/chrome/out.csv'
+    chrome_ip = '10.0.2.15'
+    website = 'netflix.com'
+    overlay_cdf_plot(android_file, chrome_file, android_ip, chrome_ip, website, show=show)
+
+
+def youtube_overlay_cdf_plot(show=False):
+    android_file = 'el_manana/android_el_manana.csv'
+    android_ip = '192.168.0.4'
+    chrome_file = 'el_manana/out.csv'
+    chrome_ip = '10.0.2.15'
+    website = 'youtube.com'
+    overlay_cdf_plot(android_file, chrome_file, android_ip, chrome_ip, website, show=show)
+
+
+def youtube_overlay_flow_plot(show=False):
+    android_file = 'el_manana/android_el_manana.csv'
+    android_ip = '192.168.0.4'
+    chrome_file = 'el_manana/out.csv'
+    chrome_ip = '10.0.2.15'
+    website = 'youtube.com'
+    overlay_flow_plot(android_file, chrome_file, android_ip, chrome_ip, website, show)
 
 
 def videos_10(show=False):
     chrome_ip = '10.0.2.15'
     chrome_file_name = 'videos-10/chrome-10/video-{0}/out.csv'
+    website = 'youtube.com'
     chrome_numbers = []
     for i in range(1, 11):
         file_name = chrome_file_name.format(i)
@@ -146,8 +168,11 @@ def videos_10(show=False):
         plt.show()
     plt.clf()
 
+
 if __name__ == '__main__':
     # run_all(False)
     # overlay_flow_plot(True)
-    overlay_cdf_plot(True)
+    # overlay_cdf_plot(True)
     # videos_10(show=True)
+    netflix_overlay_flow_plot()
+    netflix_overlay_cdf_plot()

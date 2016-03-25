@@ -4,7 +4,7 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
-from shared import GaplessList, storage_formatter_factory
+from shared import GaplessList, storage_formatter_factory, pretty_name
 
 
 def generate_bitrate_plot_data(input_file, home_ip, website='youtube.com', is_incoming=True, protocols=None):
@@ -37,7 +37,8 @@ def cdf_plot(byte_rate_list, color='red', ax=None, is_log=False):
         plt.xscale('log')
         ax.set_xticks([0, 10, 100, 1024, 10 * 1024, 100 * 1024, 1024 * 1024, 10 * 1024 * 1024])
     else:
-        ax.set_xticks([0, 256 * 1024, 512 * 1024, 768 * 1024, 1024 * 1024, 1.25 * 1024 * 1024, 1.5 * 1024 * 1024, 1.75 * 1024 * 1024, 2 * 1024 * 1024])
+        # ax.set_xticks([0, 256 * 1024, 512 * 1024, 768 * 1024, 1024 * 1024, 1.25 * 1024 * 1024, 1.5 * 1024 * 1024, 1.75 * 1024 * 1024, 2 * 1024 * 1024])
+        ax.set_xticks([0, 512 * 1024, 1024 * 1024, 1.5 * 1024 * 1024, 2 * 1024 * 1024, 2.5 * 1024 * 1024, 3 * 1024 * 1024, 3.5 * 1024 * 1024, 4 * 1024 * 1024])
 
     ax.get_xaxis().set_major_formatter(FuncFormatter(storage_formatter_factory(unit_speed=True)))
 
@@ -49,40 +50,61 @@ def cdf_plot(byte_rate_list, color='red', ax=None, is_log=False):
     return ax, line
 
 
-def bitrate_cdf_plot(show=False):
+def bitrate_cdf_plot(android_file, chrome_file, android_ip, chrome_ip, website, quic_file=None, show=False):
+    with_quic = quic_file is not None
+
+    # generate data
+    chrome_byte_rate_list = generate_bitrate_plot_data(chrome_file, chrome_ip, website, is_incoming=True)
+    android_byte_rate_list = generate_bitrate_plot_data(android_file, android_ip, website, is_incoming=True)
+    if with_quic:
+        quic_byte_rate_list = generate_bitrate_plot_data(quic_file, chrome_ip, website, is_incoming=True, protocols=['TCP', 'UDP'])
+
+    ax, line1 = cdf_plot(chrome_byte_rate_list, color='red', is_log=False)
+    if with_quic:
+        ax, line2 = cdf_plot(quic_byte_rate_list, color='green', ax=ax, is_log=False)
+    ax, line3 = cdf_plot(android_byte_rate_list, color='blue', ax=ax, is_log=False)
+
+    if with_quic:
+        plt.legend([line1[0], line2[0], line3[0]], map(pretty_name(website), ['{} Chrome (TCP)', '{} Chrome (QUIC)', '{} Android (TCP)']), loc=4)
+    else:
+        plt.legend([line1[0], line3[0]], map(pretty_name(website), ['{} Chrome (TCP)', '{} Android (TCP)']), loc=4)
+    plt.savefig('{}_android_bitrate.svg'.format(website))
+    if show:
+        plt.show()
+    plt.clf()
+
+    ax, line1 = cdf_plot(chrome_byte_rate_list, color='red', is_log=True)
+    if with_quic:
+        ax, line2 = cdf_plot(quic_byte_rate_list, color='green', ax=ax, is_log=True)
+    ax, line3 = cdf_plot(android_byte_rate_list, color='blue', ax=ax, is_log=True)
+    if with_quic:
+        plt.legend([line1[0], line2[0], line3[0]], map(pretty_name(website), ['{} Chrome (TCP)', '{} Chrome (QUIC)', '{} Android (TCP)']), loc=4)
+    else:
+        plt.legend([line1[0], line3[0]], map(pretty_name(website), ['{} Chrome (TCP)', '{} Android (TCP)']), loc=4)
+    plt.savefig('{}_android_bitrate_log.svg'.format(website))
+    if show:
+        plt.show()
+    plt.clf()
+
+
+def youtube_cdf_plot(show=False):
     android_file = 'el_manana/android_el_manana.csv'
     android_ip = '192.168.0.4'
     chrome_file = 'el_manana/out.csv'
     chrome_ip = '10.0.2.15'
     quic_file = 'quic-manana/out.csv'
     website = 'youtube.com'
-
-    chrome_byte_rate_list = generate_bitrate_plot_data(chrome_file, chrome_ip, website, is_incoming=True)
-    android_byte_rate_list = generate_bitrate_plot_data(android_file, android_ip, website, is_incoming=True)
-    quic_byte_rate_list = generate_bitrate_plot_data(quic_file, chrome_ip, website, is_incoming=True, protocols=['TCP', 'UDP'])
-
-    ax, line1 = cdf_plot(chrome_byte_rate_list, color='red', is_log=False)
-    ax, line2 = cdf_plot(quic_byte_rate_list, color='green', ax=ax, is_log=False)
-    ax, line3 = cdf_plot(android_byte_rate_list, color='blue', ax=ax, is_log=False)
-
-    plt.legend([line1[0], line2[0], line3[0]], ['YouTube Chrome (TCP)', 'YouTube Chrome (QUIC)', 'YouTube Android (TCP)'], loc=4)
-    plt.savefig('youtube_android_bitrate.svg')
-    if show:
-        plt.show()
-    plt.clf()
-
-    ax, line1 = cdf_plot(chrome_byte_rate_list, color='red', is_log=True)
-    ax, line2 = cdf_plot(quic_byte_rate_list, color='green', ax=ax, is_log=True)
-    ax, line3 = cdf_plot(android_byte_rate_list, color='blue', ax=ax, is_log=True)
-    plt.legend([line1[0], line2[0], line3[0]], ['YouTube Chrome (TCP)', 'YouTube Chrome (QUIC)', 'YouTube Android (TCP)'], loc=4)
-    plt.savefig('youtube_android_bitrate_log.svg')
-    if show:
-        plt.show()
-    plt.clf()
+    bitrate_cdf_plot(android_file, chrome_file, android_ip, chrome_ip, website, quic_file, show)
 
 
-def bitrate_quic_tcp():
-    pass
+def netflix_cdf_plot(show=False):
+    android_file = 'steinsgate_dump/android/out.csv'
+    android_ip = '192.168.0.4'
+    chrome_file = 'steinsgate_dump/chrome/out.csv'
+    chrome_ip = '10.0.2.15'
+    website = 'netflix.com'
+    bitrate_cdf_plot(android_file, chrome_file, android_ip, chrome_ip, website, show=show)
+
 
 if __name__ == '__main__':
-    bitrate_cdf_plot(show=False)
+    netflix_cdf_plot(show=True)
