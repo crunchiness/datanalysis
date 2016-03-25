@@ -62,7 +62,7 @@ def plot_chunk_sizes(show=False):
     plt.tight_layout()
     if show:
         plt.show()
-    plt.savefig('chunk_sizes.svg')
+    plt.savefig('chunk_sizes_range.svg')
     plt.clf()
 
 if __name__ == '__main__':
