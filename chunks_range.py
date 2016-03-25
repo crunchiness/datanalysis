@@ -5,8 +5,6 @@ from matplotlib.ticker import FuncFormatter
 
 from shared import storage_formatter_factory
 
-out_file = open('out.txt', mode='r')
-
 
 def get_chunk_size_data(input_file):
     itags = {}
@@ -39,6 +37,11 @@ def plot_chunk_sizes(show=False):
     ax.get_xaxis().set_major_formatter(FuncFormatter(storage_formatter_factory()))
     ax.set_xticks(map(lambda x: x*1024, [0, 256, 512, 768, 1024, 1024 + 256, 1024 + 512, 1024 + 768, 2048]))
 
+    tag_dict = {
+        '243': 'video @ 524k',
+        '244': 'video @ 798k',
+        '251': 'audio @ 160k'
+    }
     colors = ['orange', 'red', 'brown', 'green', 'blue']
     types = []
     averages = []
@@ -50,19 +53,17 @@ def plot_chunk_sizes(show=False):
         y_values = [len(filter(lambda x: x <= chunk_size, chunks)) for chunk_size in x_values]
         y_values = map(lambda x: x / float(len(chunks)), y_values)
         types.append(itag)
-        averages.append(sum(chunks) / float(len(chunks)))
+        average = sum(chunks) / float(len(chunks))
+        print itag, tag_dict[itag], average
+        averages.append(average)
         lines.append(plt.plot(x_values, y_values, color=colors[i]))
 
-    tag_dict = {
-        '243': 'video @ 524k',
-        '244': 'video @ 798k',
-        '251': 'audio @ 160k'
-    }
     plt.legend(map(lambda x: x[0], lines), map(lambda x: tag_dict[x], types), loc=4)
     plt.tight_layout()
     if show:
         plt.show()
     plt.savefig('chunk_sizes.svg')
+    plt.clf()
 
 if __name__ == '__main__':
     plot_chunk_sizes(show=False)
