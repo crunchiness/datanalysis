@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
 from accumulated_data import get_time_limits
-from chunks_range import get_chunk_size_data
+from chunks_range import youtube_get_chunk_size_data
 from shared import make_stream_id, make_storage_ticks, storage_formatter_factory
 
 
@@ -103,7 +103,7 @@ def chunks_both_real_fake(show=False):
     fake_y_values = [len(filter(lambda x: x <= chunk_size, fake_chunk_sizes)) for chunk_size in fake_x_values]
     fake_y_values = map(lambda x: x / float(len(fake_chunk_sizes)), fake_y_values)
 
-    real_chunks = get_chunk_size_data(input_file)
+    real_chunks = youtube_get_chunk_size_data(input_file)
     real_chunks = reduce(lambda x, y: x + y, map(lambda x: x[1], real_chunks.items()), [])
 
     real_x_values = sorted(list(set(real_chunks)))
