@@ -77,6 +77,41 @@ def plot_accumulated_data(input_file, home_ip, website, platform, show=False):
         plt.show()
 
 
+def plot_accumulated_data_netflix(input_file, home_ip, website, platform, y_limit, show=False):
+    data = generate_data(input_file, home_ip, website=website, protocols=['TCP'])
+    all_stream_data = data['all_streams']
+    # all_stream_data['time'] = filter(lambda x: x[0] < 50, all_stream_data['time'])
+    if platform == 'android':
+        first_stream_id, first_stream_data = sorted(data.items(), cmp=lambda x, y: x[1]['total'] - y[1]['total'], reverse=True)[1]
+        second_stream_id, second_stream_data = sorted(data.items(), cmp=lambda x, y: x[1]['total'] - y[1]['total'], reverse=True)[2]
+        third_stream_id, third_stream_data = sorted(data.items(), cmp=lambda x, y: x[1]['total'] - y[1]['total'], reverse=True)[3]
+
+    fig, ax = plt.subplots()
+    ax.set_ylabel('accumulated data')
+    ax.set_xlabel('time, s')
+
+    if y_limit is not None:
+        fn, tix = make_storage_ticks(filter(lambda x: x < y_limit, map(lambda x: x[1], all_stream_data['time'])))
+    else:
+        fn, tix = make_storage_ticks(map(lambda x: x[1], all_stream_data['time']))
+    ax.yaxis.set_major_formatter(fn)
+    plt.yticks(tix)
+
+    red_line = plt.plot(map(lambda x: x[1], all_stream_data['time']), color='red')
+    if platform == 'android':
+        blue_line = plt.plot(map(lambda x: x[1], first_stream_data['time']), color='blue')
+        green_line = plt.plot(map(lambda x: x[1], second_stream_data['time']), color='green')
+        orange_line = plt.plot(map(lambda x: x[1], third_stream_data['time']), color='orange')
+        plt.legend([red_line[0], blue_line[0], green_line[0], orange_line[0]], map(pretty_name(website), ['{} combined traffic', '{} first stream', '{} second stream', '{} third stream']))
+    else:
+        plt.legend([red_line[0]], map(pretty_name(website), ['{} combined traffic']))
+    if y_limit is not None:
+        plt.ylim(0, y_limit)
+    plt.savefig('{}_{}_accumulated_data{}.svg'.format(website, platform, '_limited' if y_limit is not None else ''))
+    if show:
+        plt.show()
+
+
 def youtube_plot_accumulated_data(show=False):
     android_file = 'el_manana/android_el_manana.csv'
     android_ip = '192.168.0.4'
@@ -86,5 +121,17 @@ def youtube_plot_accumulated_data(show=False):
     plot_accumulated_data(chrome_file, chrome_ip, website, platform='chrome', show=show)
     plot_accumulated_data(android_file, android_ip, website, platform='android', show=show)
 
+
+def netflix_plot_accumulated_data(y_limit=None, show=False):
+    android_file = 'hannibal_dump/android.csv'
+    android_ip = '192.168.1.6'
+    chrome_file = 'hannibal_dump/chrome.csv'
+    chrome_ip = '192.168.1.2'
+    website = 'netflix.com'
+    plot_accumulated_data_netflix(chrome_file, chrome_ip, website, 'chrome', y_limit, show=show)
+    plot_accumulated_data_netflix(android_file, android_ip, website, 'android', y_limit, show=show)
+
 if __name__ == '__main__':
     youtube_plot_accumulated_data(show=False)
+    netflix_plot_accumulated_data(show=False)
+    netflix_plot_accumulated_data(y_limit=320 * 1024 * 1024, show=False)
