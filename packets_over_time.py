@@ -5,20 +5,15 @@ import matplotlib.pyplot as plt
 from shared import make_storage_ticks, make_stream_id
 
 
-def plot_thing(input_file, home_ip, plot_all=True, plot_first=False, plot_second=False, plot_rest=False, website='youtube.com', is_incoming=True, colors=None, chart=None, names=None, sizes=True, protocols=None):
+def plot_thing(input_file, home_ip, plot_all=True, plot_first=False, plot_second=False, plot_rest=False, website='youtube.com', is_incoming=True, colors=None, chart=None, names=None, sizes=True, protocols=None, window=1):
     if protocols is None:
         protocols = ['TCP']
     if names is None:
         names = ['All streams', 'Top stream', 'Rest']
     if colors is None:
         colors = ['r', 'g', 'b']
-    # all streams also 1 stream
-    window = 1  # seconds
 
     streams = {}
-    # streams = {
-    #     1231255: ''
-    # }
 
     with open(input_file, 'rb') as csv_file:
         data_reader = csv.DictReader(csv_file, delimiter=',')
@@ -111,10 +106,11 @@ def plot_thing(input_file, home_ip, plot_all=True, plot_first=False, plot_second
         fn, tix = make_storage_ticks(all_values)
         ax.yaxis.set_major_formatter(fn)
         plt.yticks(tix)
+    ax.set_xticklabels([int(x * window) for x in ax.get_xticks()])
     return fig, ax, plot_line_list, plot_name_list
 
 
-def plot(which, show):
+def plot(which, show=False):
     if 'el_manana' in which:
         android = {
             'file': 'el_manana/android_el_manana.csv',
@@ -190,19 +186,19 @@ def plot_audio_video(show=False):
 
 
 def netflix_plot(show=False):
-    android_file = 'steinsgate_dump/android/out.csv'
-    android_ip = '192.168.0.4'
-    chrome_file = 'steinsgate_dump/chrome/out.csv'
-    chrome_ip = '10.0.2.15'
+    android_file = 'hannibal_dump/android.csv'
+    android_ip = '192.168.1.6'
+    chrome_file = 'hannibal_dump/chrome.csv'
+    chrome_ip = '192.168.1.2'
     website = 'netflix.com'
 
-    plot_thing(android_file, android_ip, website=website, is_incoming=True, colors=['r'], names=['All streams'])
+    plot_thing(android_file, android_ip, website=website, is_incoming=True, plot_all=True, colors=['r'], names=['All streams'], window=10)
     plt.savefig('{}_android_over_time_incoming.svg'.format(website))
     if show:
         plt.show()
     plt.clf()
 
-    plot_thing(chrome_file, chrome_ip, website=website, is_incoming=True, colors=['r'], names=['All streams'])
+    plot_thing(chrome_file, chrome_ip, website=website, is_incoming=True, plot_all=True, colors=['r'], names=['All streams'], window=10)
     plt.savefig('{}_chrome_over_time_incoming.svg'.format(website))
     if show:
         plt.show()
@@ -219,7 +215,7 @@ def plot_quic(show=False):
     plt.clf()
 
 if __name__ == '__main__':
-    # plot('el_manana', True)
-    # plot_quic(show=True)
-    # netflix_plot(show=True)
-    plot_audio_video(show=True)
+    plot('el_manana', show=False)
+    plot_quic(show=False)
+    plot_audio_video(show=False)
+    netflix_plot(show=False)
