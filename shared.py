@@ -95,7 +95,7 @@ def storage_formatter_factory(unit_speed=False, decimal_places=1):
             if round(value) == value:
                 return '{0:.0f} {1}'.format(value, unit)
             else:
-                return '{0:.' + str(decimal_places) + 'f} {1}'.format(round(value, decimal_places), unit)
+                return ('{0:.' + str(decimal_places) + 'f} {1}').format(round(value, decimal_places), unit)
         return storage_formatter
 
 
