@@ -31,17 +31,17 @@ def generate_data(input_file, home_ip, website='youtube.com', is_incoming=True, 
     return values, shortened
 
 
-def top_flows_chart(chrome_input_file, android_input_file, chrome_home_ip, android_home_ip, website, is_incoming,
+def top_flows_chart(chrome_file, android_file, chrome_ip, android_ip, website, is_incoming,
                     chrome_color='red', android_color='blue', ax=None):
     """
     Draws a plot of how much traffic transferred per flow.
     :return:
     """
-    chrome_data, chrome_shortened = generate_data(chrome_input_file, chrome_home_ip, website, is_incoming)
+    chrome_data, chrome_shortened = generate_data(chrome_file, chrome_ip, website, is_incoming)
     chrome_data = map(lambda x: x[1], chrome_data)
-    android_data, android_shortened = generate_data(android_input_file, android_home_ip, website, is_incoming)
+    android_data, android_shortened = generate_data(android_file, android_ip, website, is_incoming)
     android_data = map(lambda x: x[1], android_data)
-    android_data = scale_data(android_data, sum(chrome_data), 1)
+    # android_data = scale_data(android_data, sum(chrome_data), 1)
     num_values = max(len(chrome_data), len(android_data))
     shortened = chrome_shortened if len(chrome_data) > len(android_data) else android_shortened
 
@@ -144,14 +144,14 @@ def youtube_top_flows(show=False):
 
 
 def netflix_top_flows(show=False):
-    android_file = 'steinsgate_dump/android/out.csv'
-    android_ip = '192.168.0.4'
-    chrome_file = 'steinsgate_dump/chrome/out.csv'
-    chrome_ip = '10.0.2.15'
+    android_file = 'hannibal_dump/android.csv'
+    android_ip = '192.168.1.6'
+    chrome_file = 'hannibal_dump/chrome.csv'
+    chrome_ip = '192.168.1.2'
     website = 'netflix.com'
     do_top_flows(android_file, chrome_file, android_ip, chrome_ip, website, show=show)
 
 if __name__ == '__main__':
     # youtube_top_flows()
     # do_quic_flows(show=True)
-    netflix_top_flows()
+    netflix_top_flows(show=True)
