@@ -5,7 +5,7 @@ import datetime
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
-from shared import make_stream_id, storage_formatter_factory
+from shared import make_stream_id, storage_formatter_factory, pretty_name
 
 
 def remove_outliers(lengths_dict, low_end=3, high_end=3):
@@ -43,7 +43,7 @@ def length_bar_chart(lengths, no_save=False, show=False, output_file=None):
     # count packets
     total_packets = sum(map(lambda x: sum(x[1].values()), lengths))
 
-    # threshold = total_packets / 20  # 1 percent
+    # threshold = total_packets / 20  # 5 percent
     threshold = total_packets / 100  # 1 percent
 
     # group counts
@@ -245,24 +245,20 @@ def chrome_in_out(show=False):
         plt.show()
 
 
-def in_out_android_chrome(tso, is_incoming=True, show=False):
-    android_ip = '192.168.0.4'
-    android_file = 'android_combined_dataset.csv'
-    chrome_ip = '10.0.2.15'
-    # chrome_file = 'chrome_combined_dataset.csv'
-    chrome_file = 'dataset3/out.csv'
-    output_file = '{}_packet_length_android_chrome{}.svg'.format('in' if is_incoming else 'out', '_tso' if tso else '')
-    website = 'youtube.com'
+def in_out_android_chrome(android_file, android_ip, chrome_file, chrome_ip, website, tso, is_incoming, show):
     use_log = is_incoming and not tso
-
     data_points_android, _ = get_packet_length_data(android_file, android_ip, website, is_incoming=is_incoming, tso=tso, need_ids=False)
     ax = plot_packet_length(data_points_android, color='blue', use_log=use_log, storage_units=use_log)
 
     data_points_chrome, _ = get_packet_length_data(chrome_file, chrome_ip, website, is_incoming=is_incoming, tso=tso, need_ids=False)
     plot_packet_length(data_points_chrome, color='red', ax=ax, use_log=use_log, storage_units=use_log)
+
+    name = pretty_name(website)('{}')
+    output_file = '{}_{}_packet_length_android_chrome{}.svg'.format(name, 'in' if is_incoming else 'out', '_tso' if tso else '')
     plt.savefig(output_file)
     if show:
         plt.show()
+    plt.clf()
 
 
 def in_out_android_chrome_el_manana(tso, is_incoming=True, show=False):
@@ -284,7 +280,7 @@ def in_out_android_chrome_el_manana(tso, is_incoming=True, show=False):
         plt.show()
 
 
-def count(is_incoming=True):
+def youtube_count(is_incoming=True):
     android_ip = '192.168.0.4'
     android_file = 'android_combined_dataset.csv'
     chrome_ip = '10.0.2.15'
@@ -375,24 +371,50 @@ def do_quic_lengths():
         except KeyError:
             length_dict[length] = 1
         total += 1
-    asdf = sorted(length_dict.items(), cmp=lambda x, y: x[1] - y[1], reverse=True)
-    asdf = map(lambda x: (x[0], '{0:.2f}%'.format(x[1] * 100 / float(total))), asdf)
-    ax = plot_packet_length(lengths, color='blue', use_log=False, storage_units=False)
-    plt.savefig('gaidys.svg')
-    if True:
-        plt.show()
+    print length_dict
+    # asdf = sorted(length_dict.items(), cmp=lambda x, y: x[1] - y[1], reverse=True)
+    # asdf = map(lambda x: (x[0], '{0:.2f}%'.format(x[1] * 100 / float(total))), asdf)
+    # ax = plot_packet_length(lengths, color='blue', use_log=False, storage_units=False)
+    # plt.savefig('gaidys.svg')
+    # if True:
+    #     plt.show()
+    # plt.clf()
+
+
+# Netflix
+def netflix_in_out_android_chrome(tso, is_incoming=True, show=False):
+    android_file = 'hannibal_dump/android.csv'
+    android_ip = '192.168.1.6'
+    chrome_file = 'hannibal_dump/chrome.csv'
+    chrome_ip = '192.168.1.2'
+    website = 'netflix.com'
+
+    in_out_android_chrome(android_file, android_ip, chrome_file, chrome_ip, website, tso, is_incoming, show)
+
+
+# YouTube
+def youtube_in_out_android_chrome(tso, is_incoming=True, show=False):
+    android_ip = '192.168.0.4'
+    android_file = 'android_combined_dataset.csv'
+    chrome_ip = '10.0.2.15'
+    chrome_file = 'dataset3/out.csv'
+    # chrome_file = 'chrome_combined_dataset.csv'
+    website = 'youtube.com'
+    in_out_android_chrome(android_file, android_ip, chrome_file, chrome_ip, website, tso, is_incoming, show)
 
 
 if __name__ == '__main__':
     # android_in_out()
     # chrome_in_out()
-    # in_out_android_chrome(True, is_incoming=True)
-    # in_out_android_chrome(True, is_incoming=False)
-    # in_out_android_chrome(False, is_incoming=True)
-    # in_out_android_chrome(False, is_incoming=False)
+    # youtube_in_out_android_chrome(True, is_incoming=True, show=False)
+    # youtube_in_out_android_chrome(True, is_incoming=False, show=False)
+    # youtube_in_out_android_chrome(False, is_incoming=True, show=False)
+    # youtube_in_out_android_chrome(False, is_incoming=False, show=False)
     # count_size()
     # in_out_android_chrome_el_manana(True, is_incoming=True)
     # in_out_android_chrome_el_manana(True, is_incoming=False)
     # get_small_big_source(is_chrome=True)
     # get_small_big_source(is_chrome=False)
     do_quic_lengths()
+    # netflix_in_out_android_chrome(True, is_incoming=True, show=True)
+    # netflix_in_out_android_chrome(False, is_incoming=True, show=True)
