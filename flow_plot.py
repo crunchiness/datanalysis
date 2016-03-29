@@ -50,7 +50,7 @@ def flow_plot_both(android_file, android_ip, chrome_file, chrome_ip, website, is
     plt.tight_layout()
     android_line = plt.plot(android_y, color='blue')
     chrome_line = plt.plot(chrome_y, color='red')
-    plt.legend([android_line[0], chrome_line[0]], map(pretty_name(website), ['{} Android connections', '{} Chrome connections']))
+    plt.legend([android_line[0], chrome_line[0]], map(pretty_name(website), ['{} Android', '{} Chrome']))
     plt.savefig(pretty_name(website)('{}_android_chrome_flow_plot_over_time.svg'))
     if show:
         plt.show()

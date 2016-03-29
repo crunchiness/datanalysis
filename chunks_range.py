@@ -152,7 +152,7 @@ def netflix_chunks_over_time(show=False):
     android_x_values = map(lambda x: x[1], android_chunks)
     android_y_values = map(lambda x: x[0], android_chunks)
 
-    chrome_file = 'hannibal_dump/out.csv'
+    chrome_file = 'hannibal_dump/chrome.csv'
     chrome_chunks = netflix_chrome_get_chunk_size_data(chrome_file)
     chrome_chunks = filter(lambda x: 100 < x[1] < 400, chrome_chunks)
     chrome_x_values = map(lambda x: x[1], chrome_chunks)
@@ -166,7 +166,7 @@ def netflix_chunks_over_time(show=False):
     plt.yticks(tix)
 
     chrome_line = plt.plot(chrome_x_values, chrome_y_values, 'r-')
-
+    plt.plot(chrome_x_values, chrome_y_values, 'ro')
     android_line = plt.plot(android_x_values, android_y_values, 'b-')
 
     plt.legend([android_line[0], chrome_line[0]], ['Netflix Android', 'Netflix Chrome'])
