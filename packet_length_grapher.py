@@ -245,14 +245,27 @@ def chrome_in_out(show=False):
         plt.show()
 
 
+def print_things(label, things):
+    things_dict = {}
+    for thing in things:
+        try:
+            things_dict[thing] += 1
+        except KeyError:
+            things_dict[thing] = 1
+    print label, things_dict
+
+
 def in_out_android_chrome(android_file, android_ip, chrome_file, chrome_ip, website, tso, is_incoming, show):
     use_log = is_incoming and not tso
     data_points_android, _ = get_packet_length_data(android_file, android_ip, website, is_incoming=is_incoming, tso=tso, need_ids=False)
+    print_things('data_points_android', data_points_android)
+    data_points_android = filter(lambda x: x != 1500, data_points_android)
     ax = plot_packet_length(data_points_android, color='blue', use_log=use_log, storage_units=use_log)
 
     data_points_chrome, _ = get_packet_length_data(chrome_file, chrome_ip, website, is_incoming=is_incoming, tso=tso, need_ids=False)
+    data_points_chrome = filter(lambda x: x != 1500 and x != 1480, data_points_chrome)
     plot_packet_length(data_points_chrome, color='red', ax=ax, use_log=use_log, storage_units=use_log)
-
+    print_things('data_points_chrome', data_points_chrome)
     name = pretty_name(website)('{}')
     output_file = '{}_{}_packet_length_android_chrome{}.svg'.format(name, 'in' if is_incoming else 'out', '_tso' if tso else '')
     plt.savefig(output_file)
@@ -403,6 +416,79 @@ def youtube_in_out_android_chrome(tso, is_incoming=True, show=False):
     in_out_android_chrome(android_file, android_ip, chrome_file, chrome_ip, website, tso, is_incoming, show)
 
 
+def length_bar_chart_simple(lengths_dict, show=False):
+
+    output_list = []
+
+    total_packets = sum(lengths_dict.values())
+    threshold = total_packets / 20  # 1 percent
+
+    # group counts
+    current_key = []
+    current_value = 0
+    for key in sorted(lengths_dict.keys()):
+        if lengths_dict[key] > threshold and current_value > 0:
+            label = '-'.join(map(str, current_key))
+            output_list.append((label, current_value))
+            current_key = []
+            current_value = 0
+        if len(current_key) == 2:
+            current_key.pop()
+        current_key.append(key)
+        current_value += lengths_dict[key]
+        if current_value > threshold:
+            label = '-'.join(map(str, current_key))
+            output_list.append((label, current_value))
+            current_key = []
+            current_value = 0
+    if current_value > 0:
+        label = '-'.join(map(str, current_key))
+        output_list.append((label, current_value))
+
+    # draw the chart
+    packets_counts = map(lambda x: x[1], output_list)
+    labels = map(lambda x: x[0], output_list)
+    ind = np.arange(len(output_list))  # the x locations for the groups
+
+    width = 0.4  # the width of the bars
+
+    fig, ax = plt.subplots()
+    ax.bar(ind, packets_counts, width, color='b')
+    # add some text for labels, title and axes ticks
+    ax.set_ylabel('Number of packets')
+    ax.set_xlabel('Packet size in bytes')
+    ax.set_xticks(ind + width)
+    ax.set_xticklabels(labels)
+
+    plt.setp(plt.xticks()[1], rotation=-30)
+    plt.tight_layout()
+
+    output_file = datetime.datetime.now().isoformat().replace(':', '_') + '__bar_chart.svg'
+    plt.savefig(output_file)
+
+    if show:
+        plt.show()
+    plt.clf()
+
+
+def bar_chart(show=False):
+    android_file = 'hannibal_dump/android.csv'
+    android_ip = '192.168.1.6'
+    chrome_file = 'hannibal_dump/chrome.csv'
+    chrome_ip = '192.168.1.2'
+    website = 'netflix.com'
+    is_incoming = not(True)
+    tso = True
+
+    data_points_android, _ = get_packet_length_data(android_file, android_ip, website, is_incoming=is_incoming, tso=tso, need_ids=False)
+    #data_points_android = filter(lambda x: x != 1500, data_points_android)
+
+    data_points_chrome, _ = get_packet_length_data(chrome_file, chrome_ip, website, is_incoming=is_incoming, tso=tso,
+                                                   need_ids=False)
+    #data_points_chrome = filter(lambda x: x != 1500 and x != 1480, data_points_chrome)
+
+    length_bar_chart_simple(make_dict(data_points_android), show=True)
+
 if __name__ == '__main__':
     # android_in_out()
     # chrome_in_out()
@@ -415,6 +501,7 @@ if __name__ == '__main__':
     # in_out_android_chrome_el_manana(True, is_incoming=False)
     # get_small_big_source(is_chrome=True)
     # get_small_big_source(is_chrome=False)
-    do_quic_lengths()
+    # do_quic_lengths()
     # netflix_in_out_android_chrome(True, is_incoming=True, show=True)
-    # netflix_in_out_android_chrome(False, is_incoming=True, show=True)
+    # netflix_in_out_android_chrome(True, is_incoming=False, show=True)
+    bar_chart(show=True)

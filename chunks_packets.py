@@ -104,7 +104,7 @@ def chunks_both_real_fake(show=False):
     fake_y_values = map(lambda x: x / float(len(fake_chunk_sizes)), fake_y_values)
 
     real_chunks = youtube_get_chunk_size_data(input_file)
-    real_chunks = reduce(lambda x, y: x + y, map(lambda x: x[1], real_chunks.items()), [])
+    real_chunks = map(lambda x: x[0], reduce(lambda x, y: x + y, map(lambda x: x[1], real_chunks.items()), []))
 
     real_x_values = sorted(list(set(real_chunks)))
     real_y_values = [len(filter(lambda x: x <= chunk_size, real_chunks)) for chunk_size in real_x_values]
@@ -178,8 +178,49 @@ def find_threshold(is_chrome):
         save_scatter(chunk_times, chunk_sizes, threshold, is_chrome, show=False)
         save_cdf(x_values, y_values, threshold, is_chrome, show=False)
 
+
+def youtube_plot_interarrival_time(is_log=False, show=False):
+
+    android_chunks = get_chunk_data_10(is_chrome=False, threshold=0.11)
+    android_timestamps = map(lambda x: x[1], android_chunks)
+    android_inter_arrival_times = map(lambda x: x[0]-x[1], zip(android_timestamps[1:], android_timestamps[:-1]))
+    android_inter_arrival_times = filter(lambda x: 0 <= x < 30, android_inter_arrival_times)
+    android_x_values = sorted(android_inter_arrival_times)
+    android_y_values = [len(filter(lambda x: x <= time, android_inter_arrival_times)) for time in android_x_values]
+    android_y_values = map(lambda x: x / float(len(android_inter_arrival_times)), android_y_values)
+
+    chrome_file = 'chrome_combined_dataset.csv'
+    chrome_data = youtube_get_chunk_size_data(chrome_file)
+    chrome_timestamps = map(lambda x: x[1], reduce(lambda x, y: x + y, map(lambda x: x[1], chrome_data.items()), []))
+    chrome_inter_arrival_times = map(lambda x: x[0] - x[1], zip(chrome_timestamps[1:], chrome_timestamps[:-1]))
+    chrome_inter_arrival_times = filter(lambda x: 0 <= x < 30, chrome_inter_arrival_times)
+    chrome_x_values = sorted(chrome_inter_arrival_times)
+    chrome_y_values = [len(filter(lambda x: x <= time, chrome_inter_arrival_times)) for time in chrome_x_values]
+    chrome_y_values = map(lambda x: x / float(len(chrome_inter_arrival_times)), chrome_y_values)
+
+    fig, ax = plt.subplots()
+    ax.set_ylabel('CDF')
+    ax.set_xlabel('Interarrival time (s)')
+    if is_log:
+        ax.set_xscale('log')
+
+    android_line = plt.plot(android_x_values, android_y_values, color='blue')
+    chrome_line = plt.plot(chrome_x_values, chrome_y_values, color='red')
+
+    loc = 2 if is_log else 4
+    plt.legend([android_line[0], chrome_line[0]], ['YouTube Android', 'YouTube Chrome'], loc=loc)
+
+    ax.set_yticklabels(['{:3}%'.format(x * 100) for x in ax.get_yticks()])
+
+    plt.savefig('youtube_inter_arrival_times{}.svg'.format('_log' if is_log else ''))
+    if show:
+        plt.show()
+    plt.clf()
+
 if __name__ == '__main__':
     # find_threshold(is_chrome=True)
     # find_threshold(is_chrome=False)
     # chunks_both_real_fake(show=True)
-    chunks_both_android_chrome(show=True)
+    # chunks_both_android_chrome(show=True)
+    youtube_plot_interarrival_time(is_log=False, show=False)
+    youtube_plot_interarrival_time(is_log=True, show=False)

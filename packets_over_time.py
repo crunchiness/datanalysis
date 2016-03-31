@@ -185,37 +185,46 @@ def plot_audio_video(show=False):
     plt.clf()
 
 
-def netflix_plot(show=False):
+def netflix_plot(is_incoming=True, show=False):
     android_file = 'hannibal_dump/android.csv'
     android_ip = '192.168.1.6'
     chrome_file = 'hannibal_dump/chrome.csv'
     chrome_ip = '192.168.1.2'
     website = 'netflix.com'
 
-    plot_thing(android_file, android_ip, website=website, is_incoming=True, plot_all=True, colors=['r'], names=['All streams'], window=10)
-    plt.savefig('{}_android_over_time_incoming.svg'.format(website))
+    plot_thing(android_file, android_ip, website=website, is_incoming=is_incoming, plot_all=True, colors=['r'], names=['All streams'], window=10)
+    plt.savefig('{}_android_over_time_{}.svg'.format(website, 'incoming' if is_incoming else 'outgoing'))
     if show:
         plt.show()
     plt.clf()
 
-    plot_thing(chrome_file, chrome_ip, website=website, is_incoming=True, plot_all=True, colors=['r'], names=['All streams'], window=10)
-    plt.savefig('{}_chrome_over_time_incoming.svg'.format(website))
+    plot_thing(chrome_file, chrome_ip, website=website, is_incoming=is_incoming, plot_all=True, colors=['r'], names=['All streams'], window=10)
+    plt.savefig('{}_chrome_over_time_{}.svg'.format(website, 'incoming' if is_incoming else 'outgoing'))
     if show:
         plt.show()
     plt.clf()
 
 
-def plot_quic(show=False):
-    quic_file = 'quic-manana/out.csv'
-    home_ip = '10.0.2.15'
-    plot_thing(quic_file, home_ip, website='youtube.com', is_incoming=True, plot_all=True, names=['All streams'], protocols=['UDP', 'TCP'])
-    plt.savefig('quic_over_time.svg')
+def netflix_plot_outgoing(show=False):
+    android_file = 'hannibal_dump/android.csv'
+    android_ip = '192.168.1.6'
+    chrome_file = 'hannibal_dump/chrome.csv'
+    chrome_ip = '192.168.1.2'
+    website = 'netflix.com'
+
+    chart = plot_thing(android_file, android_ip, website=website, colors=['b'], is_incoming=False, names=['Netflix Android'])
+    plot_thing(chrome_file, chrome_ip, website=website, colors=['r'], is_incoming=False, names=['Netflix Chrome'], chart=chart)
+
+    plt.savefig('{}_over_time_outgoing.svg'.format(website))
+
     if show:
         plt.show()
     plt.clf()
+
 
 if __name__ == '__main__':
-    plot('el_manana', show=False)
-    plot_quic(show=False)
-    plot_audio_video(show=False)
-    netflix_plot(show=False)
+    # plot('el_manana', show=False)
+    # plot_quic(show=False)
+    # plot_audio_video(show=False)
+    # netflix_plot(show=False)
+    netflix_plot_outgoing(show=False)

@@ -21,9 +21,9 @@ def youtube_get_chunk_size_data(input_file):
                 itag = parse_qs(urlparse(row['url']).query)['itag'][0]
 
                 try:
-                    itags[itag].append(chunk_size)
+                    itags[itag].append((chunk_size, float(row['timestamp'])))
                 except KeyError:
-                    itags[itag] = [chunk_size]
+                    itags[itag] = [(chunk_size, float(row['timestamp']))]
     return itags
 
 
@@ -48,6 +48,7 @@ def youtube_plot_chunk_sizes(show=False):
     averages = []
     lines = []
     for i, (itag, chunks) in enumerate(itags.items()):
+        chunks = map(lambda x: x[0], chunks)
         if itag == '278' or itag == '250':
             continue
         x_values = sorted(list(set(chunks)))
@@ -100,6 +101,43 @@ def netflix_chrome_get_chunk_size_data(input_file):
     return chunks
 
 
+def netflix_plot_interarrival_time(is_log=False, show=False):
+    android_file = 'netflix_chunks.csv'
+    android_timestamps = map(lambda x: x[1], netflix_android_get_chunk_size_data(android_file))
+    android_inter_arrival_times = map(lambda x: x[0]-x[1], zip(android_timestamps[1:], android_timestamps[:-1]))
+    android_inter_arrival_times = filter(lambda x: 0 <= x < 30, android_inter_arrival_times)
+    android_x_values = sorted(android_inter_arrival_times)
+    android_y_values = [len(filter(lambda x: x <= time, android_inter_arrival_times)) for time in android_x_values]
+    android_y_values = map(lambda x: x / float(len(android_inter_arrival_times)), android_y_values)
+
+    chrome_file = 'hannibal_dump/chrome.csv'
+    chrome_timestamps = map(lambda x: x[1], netflix_chrome_get_chunk_size_data(chrome_file))
+    chrome_inter_arrival_times = map(lambda x: x[0] - x[1], zip(chrome_timestamps[1:], chrome_timestamps[:-1]))
+    chrome_inter_arrival_times = filter(lambda x: 0 <= x < 30, chrome_inter_arrival_times)
+    chrome_x_values = sorted(chrome_inter_arrival_times)
+    chrome_y_values = [len(filter(lambda x: x <= time, chrome_inter_arrival_times)) for time in chrome_x_values]
+    chrome_y_values = map(lambda x: x / float(len(chrome_inter_arrival_times)), chrome_y_values)
+
+    fig, ax = plt.subplots()
+    ax.set_ylabel('CDF')
+    ax.set_xlabel('Interarrival time (s)')
+    if is_log:
+        ax.set_xscale('log')
+
+    android_line = plt.plot(android_x_values, android_y_values, color='blue')
+    chrome_line = plt.plot(chrome_x_values, chrome_y_values, color='red')
+
+    loc = 2 if is_log else 4
+    plt.legend([android_line[0], chrome_line[0]], ['Netflix Android', 'Netflix Chrome'], loc=loc)
+
+    ax.set_yticklabels(['{:3}%'.format(x * 100) for x in ax.get_yticks()])
+
+    plt.savefig('netflix_inter_arrival_times{}.svg'.format('_log' if is_log else ''))
+    if show:
+        plt.show()
+    plt.clf()
+
+
 def netflix_plot_chunk_sizes(show=False):
     android_file = 'netflix_chunks.csv'
     android_chunks = map(lambda x: x[0], netflix_android_get_chunk_size_data(android_file))
@@ -107,7 +145,7 @@ def netflix_plot_chunk_sizes(show=False):
     android_y_values = [len(filter(lambda x: x <= chunk_size, android_chunks)) for chunk_size in android_x_values]
     android_y_values = map(lambda x: x / float(len(android_chunks)), android_y_values)
 
-    chrome_file = 'hannibal_dump/out.csv'
+    chrome_file = 'hannibal_dump/chrome.csv'
     chrome_chunks = map(lambda x: x[0], netflix_chrome_get_chunk_size_data(chrome_file))
     chrome_x_values = sorted(list(set(chrome_chunks)))
     chrome_y_values = [len(filter(lambda x: x <= chunk_size, chrome_chunks)) for chunk_size in chrome_x_values]
@@ -178,6 +216,9 @@ def netflix_chunks_over_time(show=False):
 
 
 if __name__ == '__main__':
-    youtube_plot_chunk_sizes(show=False)
-    netflix_plot_chunk_sizes(show=False)
-    netflix_chunks_over_time(show=False)
+    # youtube_plot_chunk_sizes(show=False)
+    # netflix_plot_chunk_sizes(show=False)
+    # netflix_chunks_over_time(show=False)
+    netflix_plot_interarrival_time(is_log=False, show=False)
+    netflix_plot_interarrival_time(is_log=True, show=False)
+

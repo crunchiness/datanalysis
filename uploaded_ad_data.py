@@ -48,11 +48,13 @@ def get_stream_sizes(input_file, home_ip, stream_ids, is_incoming=False):
     return sizes, all_sizes
 
 
+
 def get_ad_sizes(print_urls=False):
     input_file = 'chrome_combined_dataset.csv'
     home_ip = '10.0.2.15'
-    ad_dict = get_ad_streams(input_file, home_ip, is_incoming=False)
+    website = 'youtube.com'
 
+    ad_dict = get_ad_streams(input_file, home_ip, website=website, is_incoming=False)
     qu = []
     for stream_id, url_list in ad_dict.items():
         if reduce(lambda x, y: x and y, map(is_ad, url_list), True):
@@ -69,5 +71,28 @@ def get_ad_sizes(print_urls=False):
     print 'Percentage ad data {0:0.1f}%'.format(sum(sizes) * 100 / float(total))
 
 
+def netflix_uploaded_data():
+    input_file = 'hannibal_dump/chrome.csv'
+    home_ip = '192.168.1.2'
+    website = 'netflix.com'
+    ad_dict = get_ad_streams(input_file, home_ip, website=website, is_incoming=False)
+
+    # https://www.netflix.com/api/msl/NFCDCH-LX-/cadmium/pblifecycle
+
+    stream_ids = set([])
+    for key in ad_dict:
+        # print key
+        for url in ad_dict[key]:
+            if 'pblifecycle' in url:
+                stream_ids.add(key)
+            # if 'nflxvideo.net/range' in url:
+            #     stream_ids.add(key)
+        #     print '\t', url
+    sizes, total = get_stream_sizes(input_file, home_ip, stream_ids)
+    print 'Total data sent:', storage_formatter_factory(unit_speed=False)(total)
+    print 'Percentage range data {0:0.1f}%'.format(sum(sizes) * 100 / float(total))
+    print 'Total ad data sent:', storage_formatter_factory(unit_speed=False)(sum(sizes))
+
 if __name__ == '__main__':
-    get_ad_sizes(print_urls=True)
+    netflix_uploaded_data()
+    #get_ad_sizes(print_urls=True)

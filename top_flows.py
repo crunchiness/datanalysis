@@ -22,6 +22,7 @@ def generate_data(input_file, home_ip, website='youtube.com', is_incoming=True, 
                         packet_sums[stream_id] = int(row['len'])
 
     values = sorted(packet_sums.items(), cmp=lambda x, y: x[1]-y[1], reverse=True)
+    # print values[0], values[1], values[2], values[3], values[4]
     values = map(lambda x: (x[0].split('-')[-1], x[1]), values)
 
     shortened = False
@@ -54,7 +55,9 @@ def top_flows_chart(chrome_file, android_file, chrome_ip, android_ip, website, i
 
     if ax is None:
         fig, ax = plt.subplots()
+    print chrome_data
     chrome_bars = ax.bar(ind, chrome_data, width, color=chrome_color)
+    print android_data
     android_bars = ax.bar(ind + width, android_data, width, color=android_color)
 
     ax.legend((chrome_bars[0], android_bars[0]), map(pretty_name(website),  ['{} Chrome', '{} Android']))
@@ -148,6 +151,10 @@ def netflix_top_flows(show=False):
     android_ip = '192.168.1.6'
     chrome_file = 'hannibal_dump/chrome.csv'
     chrome_ip = '192.168.1.2'
+    # android_file = 'steinsgate_dump/android/out.csv'
+    # android_ip = '192.168.0.4'
+    # chrome_file = 'steinsgate_dump/chrome/dump1/out.csv'
+    # chrome_ip = '10.0.2.15'
     website = 'netflix.com'
     do_top_flows(android_file, chrome_file, android_ip, chrome_ip, website, show=show)
 
